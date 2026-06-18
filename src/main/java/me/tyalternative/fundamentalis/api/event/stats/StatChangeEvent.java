@@ -1,4 +1,4 @@
-package me.tyalternative.fundamentalis.api.event;
+package me.tyalternative.fundamentalis.api.event.stats;
 
 import me.tyalternative.fundamentalis.api.component.ComponentHolder;
 import me.tyalternative.fundamentalis.api.stats.StatType;

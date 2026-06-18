@@ -14,7 +14,7 @@ import java.util.UUID;
  * C'est le service que les modules externes utilisent pour accéder
  * aux composants d'une entité. Il est disponible via le Service Locator:
  *<pre>{@code
- *   FundamentalisAPI.get().getEntityService()
+ *   Fundamentalis.get().getEntityService()
  *}
  * <H3>Pourquoi un service séparé ? </H3>
  * Le ComponentHolder d'une entité est géré par le Core (cycle de vie,
@@ -24,7 +24,7 @@ import java.util.UUID;
  * <H3> Exemple d'usage dans un listener de combat </H3>
  *
  *<pre>{@code
- *   IEntityService entities = FundamentalisAPI.get().getEntityService();
+ *   IEntityService entities = Fundamentalis.get().getEntityService();
  *
  *   entities.get(attacker).ifPresent(holder -> {
  *       IStatsComponent stats = holder.require(IStatsComponent.KEY);

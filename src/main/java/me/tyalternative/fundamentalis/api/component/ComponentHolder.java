@@ -1,5 +1,6 @@
 package me.tyalternative.fundamentalis.api.component;
 
+import me.tyalternative.fundamentalis.api.exception.ComponentNotFoundException;
 import org.bukkit.entity.LivingEntity;
 
 import java.util.Optional;
@@ -63,7 +64,7 @@ public interface ComponentHolder {
 
     /**
      * Retourne le composant associé à cette clé.<br>
-     * Lance ComponentNotFoundException si le composant est absent.
+     * Lance {@link ComponentNotFoundException} si le composant est absent.
      * <p>
      * Utiliser cette méthode quand l'absence du composant est une erreur <br>
      * (ex : dans le pipeline de dégâts, toute entité doit avoir des stats).

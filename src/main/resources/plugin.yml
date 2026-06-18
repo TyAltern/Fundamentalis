@@ -1,6 +1,6 @@
-name: FundamentalisAPI
+name: Fundamentalis
 version: '1.0-SNAPSHOT'
-main: me.tyalternative.fundamentalis.api.FundamentalisAPI
+main: me.tyalternative.fundamentalis.Fundamentalis
 api-version: '1.21'
 authors: [ TyAlternative ]
 description: A fundamentalis plugin

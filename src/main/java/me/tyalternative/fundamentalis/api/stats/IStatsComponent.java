@@ -1,10 +1,9 @@
 package me.tyalternative.fundamentalis.api.stats;
 
-import me.tyalternative.fundamentalis.api.event.StatChangeEvent;
+import me.tyalternative.fundamentalis.api.event.stats.StatChangeEvent;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * <h2>Contrat public du composant de stats.</h2>
