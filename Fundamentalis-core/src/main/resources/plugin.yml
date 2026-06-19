@@ -1,6 +1,23 @@
-name: Fundamentalis-core
-version: '1.0-SNAPSHOT'
+name: fundamentalis-core
+version: '${project.version}'
 main: me.tyalternative.fundamentalis.core.CorePlugin
 api-version: '1.21'
+description: "Moteur RPG Fundamentalis - couche Core (stats, entités, persistance)"
 authors: [ TyAlternative ]
-description: A fundamentalis plugin
+
+# Le Core doit se charger en premier — tous les autres modules en dépendent
+load: STARTUP
+
+# Aucune dépendance externe obligatoire pour le Core
+depend: [fundamentalis-api]
+softdepend: []
+
+commands:
+  stats:
+    description: "Consulter ou modifier les statistiques d'un joueur"
+    usage: "/stats [joueur] | /stats set|add <joueur> <stat> <valeur>"
+
+permissions:
+  fundamentalis.stats.set:
+    description: "Permet de modifier les stats de base d'un joueur via /stats set|add"
+    default: op

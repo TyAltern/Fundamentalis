@@ -7,42 +7,50 @@
     <groupId>me.tyalternative</groupId>
     <artifactId>fundamentalis-parent</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <!--
+        packaging: pom signifie que ce projet n'est pas un jar —
+        c'est un agrégateur qui fédère les modules fils.
+    -->
     <packaging>pom</packaging>
 
     <name>Fundamentalis</name>
-    <description>RPG framework for Minecraft — Paper 26.2</description>
+    <description>RPG framework for Minecraft — Paper 1.21</description>
 
+    <!--
+        Liste des modules fils.
+        L'ordre compte : Maven build fundamentalis-api EN PREMIER,
+        l'installe dans ~/.m2, puis fundamentalis-core peut le trouver.
+    -->
     <modules>
         <module>fundamentalis-api</module>
-        <!-- À ajouter au fur et à mesure :   -->
-        <!-- <module>fundamentalis-core</module>   -->
-        <!-- <module>fundamentalis-combat</module> -->
-        <!-- <module>fundamentalis-classes</module>-->
+        <module>fundamentalis-core</module>
     </modules>
 
     <properties>
-        <java.version>25</java.version>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
+        <java.version>21</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <!-- Versions centralisées ici — modifier une seule fois pour tout le projet -->
-        <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
+        <paper.version>1.21.1-R0.1-SNAPSHOT</paper.version>
         <hikari.version>6.2.1</hikari.version>
-        <mythicmobs.version>5.8.0</mythicmobs.version>
         <junit.version>5.11.0</junit.version>
         <mockito.version>5.14.0</mockito.version>
     </properties>
 
     <!--
-        dependencyManagement : définit les versions sans les importer.
-        Les modules fils déclarent la dépendance SANS version — elle est
-        héritée d'ici. Cela évite les conflits de version entre modules.
+        dependencyManagement : DÉFINIT les versions, ne les importe PAS.
+        Les modules fils déclarent la dépendance sans <version> —
+        elle est héritée d'ici automatiquement.
+        Avantage : on change une version à un seul endroit pour tout le projet.
     -->
     <dependencyManagement>
         <dependencies>
 
-            <!-- API interne — tous les modules fils en dépendent -->
+            <!--
+                L'API est déclarée ici pour que le Core (et les futurs modules)
+                puissent en dépendre sans répéter la version.
+                scope=provided : le jar sera fourni par le serveur Minecraft,
+                il ne doit PAS être inclus dans le jar final du Core.
+            -->
             <dependency>
                 <groupId>me.tyalternative</groupId>
                 <artifactId>fundamentalis-api</artifactId>
@@ -50,7 +58,6 @@
                 <scope>provided</scope>
             </dependency>
 
-            <!-- Paper API -->
             <dependency>
                 <groupId>io.papermc.paper</groupId>
                 <artifactId>paper-api</artifactId>
@@ -58,23 +65,16 @@
                 <scope>provided</scope>
             </dependency>
 
-            <!-- HikariCP — pool de connexions MySQL -->
+            <!--
+                HikariCP sans scope déclaré ici — le Core le mettra en compile
+                pour qu'il soit inclus dans son jar final via le Shade plugin.
+            -->
             <dependency>
                 <groupId>com.zaxxer</groupId>
                 <artifactId>HikariCP</artifactId>
                 <version>${hikari.version}</version>
-                <scope>compile</scope>
             </dependency>
 
-            <!-- MythicMobs — scope provided, le jar est sur le serveur -->
-            <dependency>
-                <groupId>io.lumine</groupId>
-                <artifactId>Mythic-Dist</artifactId>
-                <version>${mythicmobs.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
-            <!-- Tests -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
@@ -96,10 +96,6 @@
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
-        <repository>
-            <id>lumine-repo</id>
-            <url>https://mvn.lumine.io/repository/maven-public/</url>
-        </repository>
     </repositories>
 
     <build>
@@ -110,13 +106,9 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.13.0</version>
                     <configuration>
-                        <source>${java.version}</source>
-                        <target>${java.version}</target>
+                        <release>${java.version}</release>
                         <compilerArgs>
-                            <!-- Active les noms de paramètres en runtime (utile pour les commandes) -->
                             <arg>-parameters</arg>
-                            <!-- Active les preview features de Java 25 si nécessaire -->
-                            <!-- <arg>enable-preview</arg> -->
                         </compilerArgs>
                     </configuration>
                 </plugin>

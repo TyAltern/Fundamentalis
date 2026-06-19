@@ -1,5 +1,7 @@
 package me.tyalternative.fundamentalis.api.component;
 
+import java.util.Objects;
+
 /**
  * <H2>Clé typée identifiant un type de composant dans un {@link ComponentHolder}.</H2>
  *
@@ -31,4 +33,27 @@ public record ComponentKey<C extends Component> (
         Class<C> type        // Interface du composant
 ) {
 
+
+    public ComponentKey {
+        Objects.requireNonNull(id,   "L'id d'une ComponentKey ne peut pas être null");
+        Objects.requireNonNull(type, "Le type d'une ComponentKey ne peut pas être null");
+        if (!id.contains(":"))
+            throw new IllegalArgumentException(
+                    "Une ComponentKey doit être au format 'namespace:nom', reçu : '" + id + "'");
+    }
+
+    /**
+     * Factory method — point d'entrée recommandé.
+     *
+     * @param id   Identifiant namespaced, ex : "fundamentalis:stats".
+     * @param type Interface du composant.
+     */
+    public static <C extends Component> ComponentKey<C> of(String id, Class<C> type) {
+        return new ComponentKey<>(id.toLowerCase(), type);
+    }
+
+    @Override
+    public String toString() {
+        return "ComponentKey(" + id + ")";
+    }
 }

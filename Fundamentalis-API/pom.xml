@@ -8,95 +8,39 @@
         <groupId>me.tyalternative</groupId>
         <artifactId>fundamentalis-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <!--
+            relativePath pointe vers le POM parent.
+            "../pom.xml" = dossier parent du module courant.
+            Sans ça, Maven cherche le parent dans ~/.m2 et échoue.
+        -->
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>Fundamentalis-API</artifactId>
+    <artifactId>fundamentalis-api</artifactId>
     <packaging>jar</packaging>
-
     <name>Fundamentalis API</name>
     <description>
-        Contrat public de Fundamentalis : interfaces, événements, exceptions.
+        Contrat public : interfaces, événements, exceptions.
         Aucune logique métier. Aucune dépendance runtime autre que Paper.
         Tous les autres modules déclarent cet artefact en scope provided.
     </description>
 
-    <properties>
-        <java.version>21</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
-    <build>
-        <defaultGoal>clean package</defaultGoal>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.3</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>run-autohotkey-script</id>
-                        <phase>package</phase> <!-- ou autre phase où tu veux exécuter -->
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>cmd</executable>
-                            <arguments>
-                                <argument>/c</argument>
-                                <argument>start</argument>
-                                <argument>""</argument>
-                                <argument>"C:\Program Files\AutoHotkey\v1.1.37.02\AutoHotkeyU64.exe"</argument>
-                                <argument>"C:\Users\Bastien\Documents\Foreign Dungeons\FundamentalisServ\minecraft_stop_restart.ahk"</argument>
-                                <argument>"Fundamentalis-API"</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-    </build>
-
-    <repositories>
-        <repository>
-            <id>papermc-repo</id>
-            <url>https://repo.papermc.io/repository/maven-public/</url>
-        </repository>
-    </repositories>
-
     <dependencies>
+        <!--
+            Paper est la seule dépendance de l'API.
+            Les interfaces référencent LivingEntity, Player, etc.
+            scope=provided : fourni par le serveur, pas inclus dans le jar.
+        -->
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.11-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
+            <!-- Pas de <version> ici — héritée du dependencyManagement parent -->
         </dependency>
     </dependencies>
+
+    <!--
+        Pas de Shade plugin ici : l'API n'embarque aucune dépendance tierce.
+        Elle est déployée telle quelle sur le serveur.
+    -->
+
 </project>

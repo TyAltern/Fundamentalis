@@ -1,6 +1,5 @@
 package me.tyalternative.fundamentalis.api.stats;
 
-import me.tyalternative.fundamentalis.Fundamentalis;
 import me.tyalternative.fundamentalis.api.exception.StatTypeNotRegisteredException;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,11 +17,10 @@ import java.util.Optional;
  *
  * <p>Accessible via the Service Locator:
  * <pre>{@code
- * IStatTypeRegistry registry = Fundamentalis.get().getStatTypeRegistry();
+ * IStatTypeRegistry registry = FundamentalisAPI.get().getStatTypeRegistry();
  * }</pre>
  *
  * @see StatType
- * @see Fundamentalis
  */
 public interface IStatTypeRegistry {
 
@@ -36,7 +34,7 @@ public interface IStatTypeRegistry {
      * @throws IllegalStateException    if a stat with the same id is already registered
      * @throws IllegalArgumentException if {@code type} is {@code null}
      */
-    void register(@NotNull StatType type);
+    void register( StatType type);
 
     /**
      * Looks up a {@link StatType} by its id (case-insensitive).

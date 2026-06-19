@@ -1,5 +1,6 @@
 package me.tyalternative.fundamentalis.api.stats;
 
+import me.tyalternative.fundamentalis.api.component.Component;
 import me.tyalternative.fundamentalis.api.event.stats.StatChangeEvent;
 
 import java.util.Collection;
@@ -27,7 +28,7 @@ import java.util.Map;
  * Les écritures (setBase, addModifier) doivent être faites sur le
  * thread principal Bukkit.
  */
-public interface IStatsComponent {
+public interface IStatsComponent extends Component {
 
     // =========================================================
     // Lecture
@@ -70,6 +71,18 @@ public interface IStatsComponent {
      * @return       La valeur effectivement appliquée après clamp.
      */
     int setBase(StatType type, int value);
+
+    /**
+     * Remplace la valeur de base d'une stat. <br>
+     * La valeur est automatiquement clampée dans [min, max] du StatType.<br>
+     * Fire un {@link StatChangeEvent} après la modification.
+     *
+     * @param type   La stat à modifier.
+     * @param value  Nouvelle valeur (sera clampée).
+     * @param cause  Cause du changement.
+     * @return       La valeur effectivement appliquée après clamp.
+     */
+    int setBase(StatType type, int value, StatChangeEvent.Cause cause);
 
     /**
      * Ajoute une valeur à la stat de base (peut être négative).

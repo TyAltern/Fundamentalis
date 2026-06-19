@@ -1,0 +1,26 @@
+# ╔══════════════════════════════════════════════════════╗
+# ║          Fundamentalis Core — Configuration          ║
+# ╚══════════════════════════════════════════════════════╝
+
+ database:
+   # Hôte du serveur MySQL
+   host: "localhost"
+   # Port MySQL (défaut : 3306)
+   port: 3306
+   # Nom de la base de données
+   name: "fundamentalis"
+   # Identifiants de connexion
+   username: "racine"
+   password: "Ou99pi22&*"
+   # Taille du pool de connexions HikariCP
+   # Valeur recommandée : 2× le nombre de cœurs CPU du serveur
+   pool-size: 10
+   # Délai max (ms) pour obtenir une connexion depuis le pool
+   connection-timeout: 5000
+
+ stats:
+   # Si vrai, les modifications de stats sont logs en console (utile en dev)
+   debug-log: false
+   # Délai (en ticks) entre chaque flush asynchrone des stats en BDD
+   # 6000 ticks = 5 minutes
+   auto-save-interval: 6000

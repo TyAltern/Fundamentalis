@@ -1,6 +1,6 @@
-name: Fundamentalis
-version: '1.0-SNAPSHOT'
-main: me.tyalternative.fundamentalis.Fundamentalis
+name: fundamentalis-api
+version: '${project.version}'
+main: me.tyalternative.fundamentalis.api.FundamentalisAPIPlugin
 api-version: '1.21'
+description: "Moteur RPG Fundamentalis - API"
 authors: [ TyAlternative ]
-description: A fundamentalis plugin

@@ -4,65 +4,107 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>me.tyalternative.fundamentalis.core</groupId>
-    <artifactId>Fundamentalis-core</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <parent>
+        <groupId>me.tyalternative</groupId>
+        <artifactId>fundamentalis-parent</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>fundamentalis-core</artifactId>
     <packaging>jar</packaging>
-
-    <name>Fundamentalis-core</name>
-
-    <properties>
-        <java.version>21</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
-    <build>
-        <defaultGoal>clean package</defaultGoal>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.3</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-    </build>
-
-    <repositories>
-        <repository>
-            <id>papermc-repo</id>
-            <url>https://repo.papermc.io/repository/maven-public/</url>
-        </repository>
-    </repositories>
+    <name>Fundamentalis Core</name>
+    <description>
+        Implémentation des contrats définis dans fundamentalis-api.
+        Gère les stats, la persistance MySQL, le cycle de vie des entités
+        et expose l'API via le Service Locator.
+    </description>
 
     <dependencies>
+
+        <!--
+            API interne — plus de scope=system, plus de chemin en dur.
+            Maven la retrouve via les coordonnées Maven normales car
+            fundamentalis-api a été installée dans ~/.m2 juste avant
+            (grâce à l'ordre des <modules> dans le POM parent).
+            scope=provided hérité du dependencyManagement parent.
+        -->
+        <dependency>
+            <groupId>me.tyalternative</groupId>
+            <artifactId>fundamentalis-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.11-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
         </dependency>
+
+        <!--
+            HikariCP en scope compile (défaut) pour être inclus dans
+            le jar final via le Shade plugin ci-dessous.
+        -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
+
+    <build>
+        <plugins>
+
+            <!--
+                Shade plugin : nécessaire ici (contrairement à l'API) car
+                HikariCP doit être physiquement présent dans le jar final
+                pour fonctionner sur le serveur, qui ne l'a pas par défaut.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <relocations>
+                                <!--
+                                    Relocation : évite un conflit si un autre plugin
+                                    du serveur embarque aussi HikariCP avec une version différente.
+                                -->
+                                <relocation>
+                                    <pattern>com.zaxxer.hikari</pattern>
+                                    <shadedPattern>me.tyalternative.fundamentalis.core.libs.hikari</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
 </project>

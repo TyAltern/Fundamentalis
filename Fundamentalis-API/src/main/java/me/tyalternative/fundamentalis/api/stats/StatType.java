@@ -23,7 +23,7 @@ package me.tyalternative.fundamentalis.api.stats;
  *   StatType MANA = StatType.of("mana", 100, 0, 9999);
  *
  *   // Puis dans la classe principale de votre plugin :
- *   Fundamentalis.get().getStatTypeRegistry().register(MANA);
+ *   FundamentalisAPI.get().getStatTypeRegistry().register(MANA);
  *   }
  */
 public class StatType {
