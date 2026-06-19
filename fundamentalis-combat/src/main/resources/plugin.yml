@@ -4,3 +4,13 @@ main: me.tyalternative.fundamentalis.combat.FundamentalisCombatPlugin
 api-version: '1.21'
 authors: [TyAlternative]
 description: A fundamentalis plugin
+
+commands:
+  giveweapon:
+    description: "Octroi une arme à un joueur"
+    usage: "/giveweapon <id> [joueur] | /giveweapon list"
+
+permissions:
+  fundamentalis.combat.giveweapon:
+    description: "Permet de d'octroyer des armes customs"
+    default: op

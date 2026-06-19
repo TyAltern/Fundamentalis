@@ -1,8 +1,10 @@
 package me.tyalternative.fundamentalis.api;
 
 import me.tyalternative.fundamentalis.api.component.ComponentHolder;
+import me.tyalternative.fundamentalis.api.component.ComponentKey;
 import me.tyalternative.fundamentalis.api.entity.IEntityService;
 import me.tyalternative.fundamentalis.api.stats.IStatTypeRegistry;
+import me.tyalternative.fundamentalis.api.stats.IStatsComponent;
 
 /**
  * Central Service Locator for the Fundamentalis API.
@@ -121,6 +123,25 @@ public abstract class FundamentalisAPI {
      * @return the stat type registry
      */
     public abstract IStatTypeRegistry getStatTypeRegistry();
+
+    /**
+     * Returns the typed {@link ComponentKey} used to access a
+     * {@link IStatsComponent} on any {@link ComponentHolder}.
+     *
+     * <p>Modules must never import the Core's concrete {@code StatsComponent}
+     * class to read this key — doing so would create a hard dependency on
+     * {@code fundamentalis-core}'s implementation package. This method is the
+     * only sanctioned way to obtain the key from outside the Core.
+     *
+     * <pre>{@code
+     * // Dans fundamentalis-combat, pour lire les stats d'une entité :
+     * ComponentKey<IStatsComponent> key = FundamentalisAPI.get().getStatsComponentKey();
+     * Optional<IStatsComponent> stats = holder.get(key);
+     * }</pre>
+     *
+     * @return the typed key for the stats component
+     */
+    public abstract ComponentKey<IStatsComponent> getStatsComponentKey();
 
     /**
      * Returns the API version string (e.g. {@code "2.0.0"}).

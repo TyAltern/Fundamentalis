@@ -1,9 +1,12 @@
 package me.tyalternative.fundamentalis.core.api;
 
 import me.tyalternative.fundamentalis.api.FundamentalisAPI;
+import me.tyalternative.fundamentalis.api.component.ComponentKey;
 import me.tyalternative.fundamentalis.api.entity.IEntityService;
 import me.tyalternative.fundamentalis.api.stats.IStatTypeRegistry;
+import me.tyalternative.fundamentalis.api.stats.IStatsComponent;
 import me.tyalternative.fundamentalis.core.entity.EntityService;
+import me.tyalternative.fundamentalis.core.stats.StatsComponent;
 import me.tyalternative.fundamentalis.core.stats.StatTypeRegistryImpl;
 
 /**
@@ -68,6 +71,19 @@ public class CoreAPIImpl extends FundamentalisAPI {
     @Override
     public IStatTypeRegistry getStatTypeRegistry() {
         return statTypeRegistry;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Retourne {@link StatsComponent#KEY}, seule et unique référence à une
+     * classe concrète du Core dans tout {@code CoreAPIImpl}. La clé elle-même
+     * est typée sur l'interface {@link IStatsComponent} — c'est ce type-là,
+     * et non {@code StatsComponent}, qui circule auprès des autres modules.
+     */
+    @Override
+    public ComponentKey<IStatsComponent> getStatsComponentKey() {
+        return StatsComponent.KEY;
     }
 
     /**
