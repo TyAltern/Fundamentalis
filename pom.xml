@@ -24,6 +24,7 @@
     <modules>
         <module>fundamentalis-api</module>
         <module>fundamentalis-core</module>
+        <module>fundamentalis-combat</module>
     </modules>
 
     <properties>

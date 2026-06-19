@@ -12,4 +12,25 @@ package me.tyalternative.fundamentalis.api.combat;
  * @see me.tyalternative.fundamentalis.api.event.combat.PreDamageEvent
  */
 public enum DamageType {
+
+    /** Dégâts physiques bruts (épée, hache, poings…). */
+    PHYSICAL,
+
+    /** Dégâts magiques (sorts, bâtons magiques…). */
+    MAGIC,
+
+    /** Dégâts de feu (brûlure, armes enflammées…). */
+    FIRE,
+
+    /** Dégâts de givre (gel, ralentissement…). */
+    FREEZE,
+
+    /** Dégâts électriques (foudre, électrocution…). */
+    LIGHTNING,
+
+    /**
+     * Dégâts vrais — ignorent toute résistance, réduction de défense
+     * ou immunité. À utiliser avec parcimonie (ex : dégâts de chute, void).
+     */
+    TRUE
 }
