@@ -1,0 +1,6 @@
+# ╔══════════════════════════════════════════════════════╗
+# ║         Fundamentalis Combat — Configuration          ║
+# ╚══════════════════════════════════════════════════════╝
+
+# Si vrai, chaque DamageResult est loggé en console (utile en dev)
+debug-log: true

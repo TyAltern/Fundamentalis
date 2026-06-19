@@ -3,14 +3,20 @@ version: '1.0-SNAPSHOT'
 main: me.tyalternative.fundamentalis.combat.FundamentalisCombatPlugin
 api-version: '1.21'
 authors: [TyAlternative]
-description: A fundamentalis plugin
+description: "Fundamentalis - système de combat (armes, pipeline de dégâts, cooldowns)"
+
+load: STARTUP
+
+# Combat a besoin de l'API (contrats) et du Core (stats des joueurs).
+depend: [ fundamentalis-api, fundamentalis-core ]
+softdepend: []
 
 commands:
   giveweapon:
-    description: "Octroi une arme à un joueur"
+    description: "Donne une arme custom du catalogue à un joueur"
     usage: "/giveweapon <id> [joueur] | /giveweapon list"
 
 permissions:
   fundamentalis.combat.giveweapon:
-    description: "Permet de d'octroyer des armes customs"
+    description: "Permet de distribuer des armes custom via /giveweapon"
     default: op
