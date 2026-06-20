@@ -1,6 +1,6 @@
 name: fundamentalis-core
 version: '${project.version}'
-main: me.tyalternative.fundamentalis.core.CorePlugin
+main: me.tyalternative.fundamentalis.core.FundamentalisCorePlugin
 api-version: '1.21'
 description: "Moteur RPG Fundamentalis - couche Core (stats, entités, persistance)"
 authors: [ TyAlternative ]

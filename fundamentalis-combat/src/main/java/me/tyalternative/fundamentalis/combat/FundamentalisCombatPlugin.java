@@ -60,7 +60,7 @@ public final class FundamentalisCombatPlugin extends JavaPlugin {
         getLogger().info("[2/4] DamageManager initialisé.");
 
         // Étape 4 — Listeners
-        boolean debugLog = getConfig().getBoolean("debug-log", false);
+        boolean debugLog = getConfig().getBoolean("debug-log", true);
         getServer().getPluginManager().registerEvents(
                 new CombatListener(damageManager, weaponRegistry, getLogger(), debugLog), this);
         getServer().getPluginManager().registerEvents(

@@ -4,6 +4,7 @@ import me.tyalternative.fundamentalis.api.component.ComponentHolder;
 import me.tyalternative.fundamentalis.api.event.entity.EntityRegisteredEvent;
 import me.tyalternative.fundamentalis.api.event.entity.EntityUnregisteredEvent;
 import me.tyalternative.fundamentalis.api.stats.IStatsComponent;
+import me.tyalternative.fundamentalis.core.FundamentalisCorePlugin;
 import me.tyalternative.fundamentalis.core.stats.StatsComponent;
 import me.tyalternative.fundamentalis.core.stats.StatsManager;
 import org.bukkit.Bukkit;
@@ -185,7 +186,7 @@ public class EntityTracker implements Listener {
     /**
      * Désenregistre toutes les entités encore trackées lors de l'arrêt du serveur.
      *
-     * <p>Appelé directement par {@link me.tyalternative.fundamentalis.core.CorePlugin CorePlugin#onDisable()}
+     * <p>Appelé directement par {@link FundamentalisCorePlugin FundamentalisCorePlugin#onDisable()}
      * (pas via un listener Bukkit, pour garantir l'ordre d'exécution).
      *
      * <p>Le flush des stats joueurs est effectué de manière <em>bloquante</em>

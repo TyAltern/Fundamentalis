@@ -66,7 +66,7 @@ public class CoreConfig {
      * Copie {@code config.yml} depuis le jar si absent, puis charge toutes les
      * valeurs en mémoire.
      *
-     * <p>Doit être appelé une seule fois dans {@code CorePlugin#onEnable()},
+     * <p>Doit être appelé une seule fois dans {@code FundamentalisCorePlugin#onEnable()},
      * avant toute autre initialisation.
      */
     public void load() {

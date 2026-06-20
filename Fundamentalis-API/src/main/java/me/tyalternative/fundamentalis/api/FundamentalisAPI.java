@@ -5,6 +5,8 @@ import me.tyalternative.fundamentalis.api.component.ComponentKey;
 import me.tyalternative.fundamentalis.api.entity.IEntityService;
 import me.tyalternative.fundamentalis.api.stats.IStatTypeRegistry;
 import me.tyalternative.fundamentalis.api.stats.IStatsComponent;
+import me.tyalternative.fundamentalis.api.status.IStatusComponent;
+import me.tyalternative.fundamentalis.api.status.IStatusEffectRegistry;
 
 /**
  * Central Service Locator for the Fundamentalis API.
@@ -142,6 +144,38 @@ public abstract class FundamentalisAPI {
      * @return the typed key for the stats component
      */
     public abstract ComponentKey<IStatsComponent> getStatsComponentKey();
+
+    /**
+     * Returns the {@link IStatusEffectRegistry}, used to register custom
+     * status effects or look up existing ones by id.
+     *
+     * <pre>{@code
+     * // Enregistrer un effet custom depuis votre plugin :
+     * StatusEffectType CONFUSION = StatusEffectType.of(
+     *         "confusion", StatusEffectCategory.CROWD_CONTROL, 3, 100);
+     * FundamentalisAPI.get().getStatusEffectRegistry().register(CONFUSION);
+     * }</pre>
+     *
+     * @return the status effect type registry
+     */
+    public abstract IStatusEffectRegistry getStatusEffectRegistry();
+
+    /**
+     * Returns the typed {@link ComponentKey} used to access an
+     * {@link IStatusComponent} on any {@link ComponentHolder}.
+     *
+     * <p>Modules must never import {@code fundamentalis-status}'s concrete
+     * {@code StatusComponent} class to read this key — this method is the
+     * only sanctioned way to obtain it from outside that module.
+     *
+     * <pre>{@code
+     * ComponentKey<IStatusComponent> key = FundamentalisAPI.get().getStatusComponentKey();
+     * Optional<IStatusComponent> status = holder.get(key);
+     * }</pre>
+     *
+     * @return the typed key for the status component
+     */
+    public abstract ComponentKey<IStatusComponent> getStatusComponentKey();
 
     /**
      * Returns the API version string (e.g. {@code "2.0.0"}).

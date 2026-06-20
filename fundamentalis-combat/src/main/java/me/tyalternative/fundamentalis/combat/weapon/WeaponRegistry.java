@@ -9,10 +9,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -64,36 +64,157 @@ public class WeaponRegistry {
      * Enregistre les 5 armes de mêlée de base, une par famille de
      * {@link WeaponType} (hors BOW et MAGIC_STAFF).
      *
-     * <p>Sert de point de départ — d'autres armes peuvent être ajoutées en
+     * <p>Sert de point de départ - d'autres armes peuvent être ajoutées en
      * appelant {@link #registerWeapon(CustomWeapon)} depuis un autre plugin
      * ou une extension future de ce module.
      */
     public void registerDefaultWeapons() {
-        registerWeapon(new CustomWeapon(
-                "iron_sword", WeaponType.SWORD, "Épée en fer",
-                6.0, 1.6, 3.0, Material.IRON_SWORD, 600
-        ) {
-            @Override
-            public void onHitEffect(DamageInfo info) {
-                info.getAttacker().sendMessage("Attack!");
-            }
-        });
-        registerWeapon(new CustomWeapon(
-                "iron_axe", WeaponType.AXE, "Hache en fer",
-                9.0, 0.9, 3.0, Material.IRON_AXE, 1100
-        ));
-        registerWeapon(new CustomWeapon(
-                "iron_spear", WeaponType.SPEAR, "Lance en fer",
-                5.0, 1.4, 4.5, Material.IRON_HOE, 700
-        ));
-        registerWeapon(new CustomWeapon(
-                "fists", WeaponType.FIST, "Poings",
-                3.0, 2.0, 2.5, Material.LEATHER, 500
-        ));
+        registerSwords();
+        registerAxes();
+        registerSpears();
+        registerFists();
+
+
         // BOW et MAGIC_STAFF volontairement omis : leur pipeline spécifique
         // (projectiles, sorts) n'est pas encore implémenté dans Combat v1.
 
         logger.info("[WeaponRegistry] " + registeredWeapons.size() + " armes enregistrées par défaut.");
+    }
+
+
+    public void registerSwords() {
+
+        CustomWeapon woodenSword = new CustomWeapon(
+                "wooden_sword", WeaponType.SWORD, "Épée en bois",
+                4.0, 1.6, 3.0, Material.WOODEN_SWORD
+        );
+        registerWeapon(woodenSword);
+
+        CustomWeapon ironSword = new CustomWeapon(
+                "iron_sword", WeaponType.SWORD, "Épée en fer",
+                6.0, 1.6, 3.0, Material.IRON_SWORD
+        );
+        registerWeapon(ironSword);
+
+        CustomWeapon excalibur = new CustomWeapon(
+                "excalibur", WeaponType.SWORD, "Excalibur",
+                12.0, 1.4, 2.5, Material.DIAMOND_SWORD
+        );
+        registerWeapon(excalibur);
+
+        CustomWeapon katana = new CustomWeapon("katana", WeaponType.SWORD, "Katana",
+                7.0, 2.0, 3.0, Material.NETHERITE_SWORD
+        ) {
+            @Override
+            public void onHitEffect(DamageInfo info) {
+                if (Math.random() < 0.5) {
+                    info.getAttacker().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 4*20, 1, false, false));
+                } else {
+                    info.getVictim().addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 4*20, 1, false, false));
+                }
+            }
+        };
+        registerWeapon(katana);
+
+    }
+
+    public void registerAxes() {
+
+        CustomWeapon lumberjackAxe = new CustomWeapon(
+                "lumberjack_axe", WeaponType.AXE, "Hache du bûcheron",
+                8.0, 0.9, 3.0, Material.IRON_AXE
+        );
+        registerWeapon(lumberjackAxe);
+
+        CustomWeapon battleAxe = new CustomWeapon(
+                "battle_axe", WeaponType.AXE, "Hache de guerre",
+                11.0, 0.8, 3.0, Material.DIAMOND_AXE
+        );
+        registerWeapon(battleAxe);
+
+        CustomWeapon executionerAxe = new CustomWeapon(
+                "executioner_axe", WeaponType.AXE, "Hache du bourreau",
+                15.0, 0.6, 2.5, Material.NETHERITE_AXE
+        ) {
+            @Override
+            public void onHitEffect(DamageInfo info) {
+                info.getAttacker().damage(info.getFinalDamage()/10);
+            }
+        };
+        registerWeapon(executionerAxe);
+
+        CustomWeapon doubleAxe = new CustomWeapon(
+                "double_axe", WeaponType.AXE, "Hache double",
+                9.5, 1.0, 3.0, Material.GOLDEN_AXE
+        );
+        registerWeapon(doubleAxe);
+
+    }
+
+    public void registerSpears() {
+        // Lance de base
+        CustomWeapon woodenSpear = new CustomWeapon(
+                "wooden_spear", WeaponType.SPEAR, "Lance en bois",
+                4.5, 1.4, 4.5, Material.STICK
+        );
+        registerWeapon(woodenSpear);
+
+        // Lance de chevalier
+        CustomWeapon knightLance = new CustomWeapon(
+                "knight_lance", WeaponType.SPEAR, "Lance de chevalier",
+                6.0, 1.3, 5.0, Material.IRON_HOE
+        );
+        registerWeapon(knightLance);
+
+        // Trident (lance magique)
+        CustomWeapon trident = new CustomWeapon(
+                "trident", WeaponType.SPEAR, "Trident",
+                7.5, 1.5, 4.0, Material.TRIDENT
+        );
+        registerWeapon(trident);
+
+        // Hallebarde (lance lourde)
+        CustomWeapon halberd = new CustomWeapon(
+                "halberd", WeaponType.SPEAR, "Hallebarde",
+                8.0, 1.1, 4.5, Material.DIAMOND_HOE
+        );
+        registerWeapon(halberd);
+    }
+
+    public void registerFists() {
+        // Gants de cuir
+        CustomWeapon leatherGloves = new CustomWeapon(
+                "leather_gloves", WeaponType.FIST, "Gants de cuir",
+                2.5, 2.0, 2.5, Material.LEATHER
+        );
+        registerWeapon(leatherGloves);
+
+        // Gantelets de fer
+        CustomWeapon ironGauntlets = new CustomWeapon(
+                "iron_gauntlets", WeaponType.FIST, "Gantelets de fer",
+                4.0, 1.8, 2.5, Material.IRON_INGOT
+        );
+        registerWeapon(ironGauntlets);
+
+        // Griffes (très rapides)
+        CustomWeapon claws = new CustomWeapon(
+                "claws", WeaponType.FIST, "Griffes",
+                3.5, 2.4, 2.0, Material.FLINT
+        );
+        registerWeapon(claws);
+
+        // Poings du dragon (légendaire)
+        CustomWeapon dragonFists = new CustomWeapon(
+                "dragon_fists", WeaponType.FIST, "Poings du dragon",
+                6.0, 2.2, 2.0, Material.NETHERITE_INGOT
+        ){
+            @Override
+            public void onHitEffect(DamageInfo info) {
+                info.getVictim().setFireTicks(80);
+                info.getAttacker().setFireTicks(20);
+            }
+        };
+        registerWeapon(dragonFists);
     }
 
     // -------------------------------------------------------------------------
@@ -128,7 +249,7 @@ public class WeaponRegistry {
     /**
      * Résout l'arme représentée par un {@link ItemStack}, via sa clé PDC.
      *
-     * @param item l'item à inspecter — peut être {@code null} ou sans meta
+     * @param item l'item à inspecter - il peut être {@code null} ou sans meta
      * @return l'arme correspondante, ou {@code null} si l'item n'est pas une arme custom connue
      */
     public CustomWeapon getWeaponFromItemStack(ItemStack item) {

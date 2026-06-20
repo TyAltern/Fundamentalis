@@ -76,6 +76,18 @@ public class CustomWeapon {
         this.cooldownMillis = cooldownMillis;
     }
 
+    public CustomWeapon(String id, WeaponType weaponType, String name, double baseDamage,
+                        double attackSpeed, double reach, Material material) {
+        this.id             = id;
+        this.weaponType     = weaponType;
+        this.name           = name;
+        this.baseDamage     = baseDamage;
+        this.attackSpeed    = attackSpeed;
+        this.reach          = reach;
+        this.material       = material;
+        this.cooldownMillis = Math.round(1000.0 / attackSpeed);
+    }
+
     /**
      * Crée une arme héritant des statistiques par défaut de sa {@link WeaponType}.
      *

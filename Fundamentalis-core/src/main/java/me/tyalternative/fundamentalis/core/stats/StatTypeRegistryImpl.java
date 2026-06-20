@@ -3,6 +3,7 @@ package me.tyalternative.fundamentalis.core.stats;
 import me.tyalternative.fundamentalis.api.exception.StatTypeNotRegisteredException;
 import me.tyalternative.fundamentalis.api.stats.IStatTypeRegistry;
 import me.tyalternative.fundamentalis.api.stats.StatType;
+import me.tyalternative.fundamentalis.core.FundamentalisCorePlugin;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -23,7 +24,7 @@ import java.util.logging.Logger;
  *
  * <p>Les six stats intégrées ({@link StatType#FORCE}, {@link StatType#DEFENSE}…)
  * sont enregistrées dans {@link #registerBuiltins()}, appelé par
- * {@link me.tyalternative.fundamentalis.core.CorePlugin CorePlugin.onEnable()}.
+ * {@link FundamentalisCorePlugin FundamentalisCorePlugin.onEnable()}.
  */
 public class StatTypeRegistryImpl implements IStatTypeRegistry {
 
@@ -52,7 +53,7 @@ public class StatTypeRegistryImpl implements IStatTypeRegistry {
 
     /**
      * Enregistre les six stats intégrées de Fundamentalis.
-     * Appelé par {@code CorePlugin#onEnable()} avant tout autre enregistrement.
+     * Appelé par {@code FundamentalisCorePlugin#onEnable()} avant tout autre enregistrement.
      */
     public void registerBuiltins() {
         register(StatType.FORCE);

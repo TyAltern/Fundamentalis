@@ -170,7 +170,7 @@ public class DatabaseManager {
 
     /**
      * Ferme proprement le pool de connexions.
-     * Doit être appelé dans {@code CorePlugin#onDisable()}.
+     * Doit être appelé dans {@code FundamentalisCorePlugin#onDisable()}.
      */
     public void close() {
         if (dataSource != null && !dataSource.isClosed()) {

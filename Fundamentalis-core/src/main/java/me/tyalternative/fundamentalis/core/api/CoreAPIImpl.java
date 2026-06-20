@@ -5,6 +5,7 @@ import me.tyalternative.fundamentalis.api.component.ComponentKey;
 import me.tyalternative.fundamentalis.api.entity.IEntityService;
 import me.tyalternative.fundamentalis.api.stats.IStatTypeRegistry;
 import me.tyalternative.fundamentalis.api.stats.IStatsComponent;
+import me.tyalternative.fundamentalis.core.FundamentalisCorePlugin;
 import me.tyalternative.fundamentalis.core.entity.EntityService;
 import me.tyalternative.fundamentalis.core.stats.StatsComponent;
 import me.tyalternative.fundamentalis.core.stats.StatTypeRegistryImpl;
@@ -14,7 +15,7 @@ import me.tyalternative.fundamentalis.core.stats.StatTypeRegistryImpl;
  *
  * <p>Cette classe est le pont entre le Service Locator public ({@link FundamentalisAPI})
  * et les implémentations concrètes du Core. Elle est instanciée une seule fois
- * dans {@link me.tyalternative.fundamentalis.core.CorePlugin CorePlugin#onEnable()}
+ * dans {@link FundamentalisCorePlugin FundamentalisCorePlugin#onEnable()}
  * et enregistrée via {@link me.tyalternative.fundamentalis.api.FundamentalisProvider FundamentalisProvider}.
  *
  * <p>N'expose que les interfaces publiques — aucune classe concrète du Core

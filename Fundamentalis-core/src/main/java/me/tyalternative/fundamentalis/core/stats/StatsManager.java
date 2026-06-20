@@ -1,10 +1,8 @@
 package me.tyalternative.fundamentalis.core.stats;
 
 import me.tyalternative.fundamentalis.api.component.ComponentHolder;
-import me.tyalternative.fundamentalis.api.event.stats.StatChangeEvent;
 import me.tyalternative.fundamentalis.api.stats.IStatTypeRegistry;
-import me.tyalternative.fundamentalis.api.stats.IStatsComponent;
-import me.tyalternative.fundamentalis.api.stats.StatType;
+import me.tyalternative.fundamentalis.core.FundamentalisCorePlugin;
 import me.tyalternative.fundamentalis.core.database.repository.EntityStatsRepository;
 import me.tyalternative.fundamentalis.core.database.repository.PlayerStatsRepository;
 import org.bukkit.Bukkit;
@@ -87,7 +85,7 @@ public class StatsManager {
 
     /**
      * Démarre la tâche d'auto-save périodique.
-     * Appelé par {@link me.tyalternative.fundamentalis.core.CorePlugin CorePlugin#onEnable()}.
+     * Appelé par {@link FundamentalisCorePlugin FundamentalisCorePlugin#onEnable()}.
      */
     public void start() {
         autoSaveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
@@ -103,7 +101,7 @@ public class StatsManager {
 
     /**
      * Arrête l'auto-save et flush tous les joueurs en ligne de manière synchrone.
-     * Appelé par {@link me.tyalternative.fundamentalis.core.CorePlugin CorePlugin.onDisable()}.
+     * Appelé par {@link FundamentalisCorePlugin FundamentalisCorePlugin.onDisable()}.
      *
      * <p>Le flush synchrone bloque volontairement le thread principal — c'est
      * acceptable à l'arrêt du serveur pour garantir que les données sont sauvegardées
@@ -229,7 +227,7 @@ public class StatsManager {
 
 // TODO: HMMM c'est pas normal ça, je pense qu'il faut je m'y penche plus
         // On passe par l'EntityService pour ne pas créer de dépendance circulaire
-        // EntityService est disponible via CorePlugin, mais on évite ce couplage ici.
+        // EntityService est disponible via FundamentalisCorePlugin, mais on évite ce couplage ici.
         // Le flush est délégué à EntityTracker qui a accès aux deux.
         return null; // Résolu dans EntityTracker via le holder
     }

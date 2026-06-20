@@ -45,7 +45,7 @@ import java.sql.SQLException;
  *   <li>Fermeture du pool MySQL via {@link DatabaseManager#close()}.</li>
  * </ol>
  */
-public final class CorePlugin extends JavaPlugin {
+public final class FundamentalisCorePlugin extends JavaPlugin {
 
     // -------------------------------------------------------------------------
     // Sous-systèmes — accessibles en lecture par les autres classes du Core
