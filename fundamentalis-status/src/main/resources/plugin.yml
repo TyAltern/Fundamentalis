@@ -1,0 +1,25 @@
+name: fundamentalis-status
+version: '1.0-SNAPSHOT'
+main: me.tyalternative.fundamentalis.status.FundamentalisStatusPlugin
+api-version: '1.21'
+description: "Fundamentalis - effets de statut (DoT, contrôle de foule, modificateurs, spécial)"
+authors: [ TyAlternative ]
+
+load: STARTUP
+
+# Status a besoin de l'API, du Core (stats) et de Combat (pipeline de dégâts pour les DoT).
+depend: [ fundamentalis-api, fundamentalis-core, fundamentalis-combat ]
+softdepend: []
+
+commands:
+  status:
+    description: "Applique, retire ou liste les effets de statut d'un joueur"
+    usage: "/status give|clear|list <joueur> ..."
+
+permissions:
+  fundamentalis.status.give:
+    description: "Permet d'appliquer un effet de statut via /status give"
+    default: op
+  fundamentalis.status.clear:
+    description: "Permet de retirer un effet de statut via /status clear"
+    default: op

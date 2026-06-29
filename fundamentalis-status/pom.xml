@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>me.tyalternative</groupId>
+    <artifactId>fundamentalis-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>fundamentalis-status</artifactId>
+  <packaging>jar</packaging>
+  <name>Fundamentalis Status</name>
+  <description>
+    Système d'effets de statut : DoT, contrôle de foule, modificateurs
+    de stats temporaires et effets spéciaux. Aucune persistance — les
+    effets actifs sont volatils et réinitialisés à chaque connexion/spawn.
+    Dépend de fundamentalis-api, fundamentalis-core (stats) et
+    fundamentalis-combat (pipeline de dégâts pour les DoT).
+  </description>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>me.tyalternative</groupId>
+      <artifactId>fundamentalis-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!--
+        Status dépend directement de Combat (et non uniquement de ses events)
+        pour pouvoir appeler DamageManager.createStatusDamage() / dealDamage()
+        lors des ticks de DoT — choix de design validé : Status peut s'appuyer
+        sur Combat directement plutôt que de tout faire transiter par
+        PreDamageEvent/PostDamageEvent.
+    -->
+    <dependency>
+      <groupId>me.tyalternative</groupId>
+      <artifactId>fundamentalis-combat</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.papermc.paper</groupId>
+      <artifactId>paper-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <!--
+      Pas de Shade plugin : aucune dépendance tierce embarquée (pas de BDD).
+  -->
+
+</project>
