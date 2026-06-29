@@ -204,7 +204,7 @@ public class EntityTracker implements Listener {
             // Flush synchrone des stats — on est sur le thread principal à l'arrêt
             holder.get(StatsComponent.KEY).ifPresent(stats -> {
                 if (holder.getEntity() instanceof Player) {
-                    statsManager.flushPlayer(uuid, (StatsComponent) stats);
+                    statsManager.flushPlayerSync(uuid, (StatsComponent) stats);
                 } else {
                     statsManager.flushEntity(uuid, (StatsComponent) stats);
                 }

@@ -5,13 +5,16 @@ import me.tyalternative.fundamentalis.api.stats.IStatTypeRegistry;
 import me.tyalternative.fundamentalis.core.FundamentalisCorePlugin;
 import me.tyalternative.fundamentalis.core.database.repository.EntityStatsRepository;
 import me.tyalternative.fundamentalis.core.database.repository.PlayerStatsRepository;
+import me.tyalternative.fundamentalis.core.entity.EntityService;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 /**
@@ -19,13 +22,13 @@ import java.util.logging.Logger;
  *
  * <p>Ce manager est responsable de :
  * <ul>
- *   <li><strong>Création</strong> — instancie et initialise un {@link StatsComponent}
+ *   <li><strong>Création</strong> - instancie et initialise un {@link StatsComponent}
  *       pour une entité donnée.</li>
- *   <li><strong>Chargement</strong> — déclenche le chargement async depuis la BDD
+ *   <li><strong>Chargement</strong> - déclenche le chargement async depuis la BDD
  *       et applique les données sur le thread principal une fois prêtes.</li>
- *   <li><strong>Sauvegarde</strong> — flush les stats en BDD à la demande
+ *   <li><strong>Sauvegarde</strong> - flush les stats en BDD à la demande
  *       ou lors du flush périodique automatique.</li>
- *   <li><strong>Auto-save</strong> — tâche périodique qui persiste les stats de
+ *   <li><strong>Auto-save</strong> - tâche périodique qui persiste les stats de
  *       tous les joueurs connectés à intervalle configurable.</li>
  * </ul>
  *
@@ -47,7 +50,13 @@ public class StatsManager {
     private final boolean               debugLog;
     private final int                   autoSaveInterval;
 
-    /** Tâche Bukkit du flush périodique — annulée dans {@link #shutdown()}. */
+    /**
+     * Injecté après construction via {@link #setEntityService(EntityService)}
+     * pour éviter une dépendance circulaire au moment de l'instanciation.
+     */
+    private EntityService entityService;
+
+    /** Tâche Bukkit du flush périodique - annulée dans {@link #shutdown()}. */
     private BukkitTask autoSaveTask;
 
     // -------------------------------------------------------------------------
@@ -79,6 +88,14 @@ public class StatsManager {
         this.autoSaveInterval = autoSaveInterval;
     }
 
+    /**
+     * Injecte l'EntityService après instanciation.
+     * Appelé par {@code CorePlugin#onEnable()} juste après la création de l'EntityService.
+     */
+    public void setEntityService(EntityService entityService) {
+        this.entityService = entityService;
+    }
+
     // -------------------------------------------------------------------------
     // Démarrage / arrêt
     // -------------------------------------------------------------------------
@@ -89,9 +106,11 @@ public class StatsManager {
      */
     public void start() {
         autoSaveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            if (entityService == null) return;
             // On itère sur les joueurs connectés et on flush leurs stats
             for (Player player : Bukkit.getOnlinePlayers()) {
-                flushPlayer(player.getUniqueId(), findStatsComponent(player.getUniqueId()));
+                StatsComponent component = resolveStatsComponent(player.getUniqueId());
+                flushPlayer(player.getUniqueId(), component);
             }
         }, autoSaveInterval, autoSaveInterval);
 
@@ -103,7 +122,7 @@ public class StatsManager {
      * Arrête l'auto-save et flush tous les joueurs en ligne de manière synchrone.
      * Appelé par {@link FundamentalisCorePlugin FundamentalisCorePlugin.onDisable()}.
      *
-     * <p>Le flush synchrone bloque volontairement le thread principal — c'est
+     * <p>Le flush synchrone bloque volontairement le thread principal - c'est
      * acceptable à l'arrêt du serveur pour garantir que les données sont sauvegardées
      * avant que la JVM ne se ferme.
      */
@@ -139,8 +158,8 @@ public class StatsManager {
         holder.attach(StatsComponent.KEY, component);
 
         // 2. Charger les données depuis la BDD de manière asynchrone
-        var loadFutur = isPlayer ? playerRepo.load(entityUUID) : entityRepo.load(entityUUID);
-        loadFutur.thenAccept(loadedData -> {
+        var loadFuture = isPlayer ? playerRepo.load(entityUUID) : entityRepo.load(entityUUID);
+        loadFuture.thenAccept(loadedData -> {
             // On revient sur le thread principal pour appliquer les données
             Bukkit.getScheduler().runTask(plugin, () -> {
                 // Vérification défensive : le holder est-il encore valide ?
@@ -172,12 +191,37 @@ public class StatsManager {
     public void flushPlayer(UUID playerUUID, StatsComponent component) {
         if (component == null) return;
         Map<String, Integer> data = component.getRawBaseValues();
+        if (data.isEmpty()) return;
         playerRepo.saveAll(playerUUID, data).thenRun(() -> {
             if (debugLog) {
                 logger.info("[StatsManager] Stats joueur " + playerUUID + " sauvegardées ("
                         + data.size() + " stats).");
             }
         });
+    }
+
+    /**
+     * Persiste les stats d'un joueur de façon <strong>synchrone/bloquante</strong>.
+     *
+     * <p>À utiliser UNIQUEMENT pendant {@code onServerShutdown()} - la JVM est
+     * sur le point de se fermer, un CompletableFuture async serait abandonné
+     * avant que le INSERT MySQL n'ait le temps de s'exécuter.
+     */
+    public void flushPlayerSync(UUID playerUUID, StatsComponent component) {
+        if (component == null) return;
+        Map<String, Integer> data = component.getRawBaseValues();
+        if (data.isEmpty()) return;
+        try {
+            playerRepo.saveAll(playerUUID, data).get(); // bloquant
+            if (debugLog) {
+                logger.info("[StatsManager] Stats joueur " + playerUUID
+                        + " sauvegardées (sync, " + data.size() + " stats).");
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.severe("[StatsManager] Erreur lors du flush synchrone de "
+                    + playerUUID + " : " + e.getMessage());
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
@@ -189,6 +233,7 @@ public class StatsManager {
     public void flushEntity(UUID entityUUID, StatsComponent component) {
         if (component == null) return;
         Map<String, Integer> data = component.getRawBaseValues();
+        if (data.isEmpty()) return;
         entityRepo.saveAll(entityUUID, data);
     }
 
@@ -218,18 +263,17 @@ public class StatsManager {
     // -------------------------------------------------------------------------
 
     /**
-     * Cherche le {@link StatsComponent} d'un joueur à partir de son UUID.
-     * Retourne {@code null} si le joueur n'est pas en ligne ou n'a pas de composant.
+     * Résout le {@link StatsComponent} d'un joueur via l'EntityService injecté.
+     * Retourne {@code null} si le joueur n'est pas tracké ou n'a pas de composant de stats.
      */
-    private StatsComponent findStatsComponent(UUID playerUUID) {
-        Player player = Bukkit.getPlayer(playerUUID);
-        if (player == null) return null;
-
-// TODO: HMMM c'est pas normal ça, je pense qu'il faut je m'y penche plus
-        // On passe par l'EntityService pour ne pas créer de dépendance circulaire
-        // EntityService est disponible via FundamentalisCorePlugin, mais on évite ce couplage ici.
-        // Le flush est délégué à EntityTracker qui a accès aux deux.
-        return null; // Résolu dans EntityTracker via le holder
+    private StatsComponent resolveStatsComponent(UUID playerUUID) {
+        if (entityService == null) return null;
+        Optional<ComponentHolder> holder = entityService.get(playerUUID);
+        if (holder.isEmpty()) return null;
+        return holder.get().get(StatsComponent.KEY)
+                .filter(s -> s instanceof StatsComponent)
+                .map(s -> (StatsComponent) s)
+                .orElse(null);
     }
 
 }

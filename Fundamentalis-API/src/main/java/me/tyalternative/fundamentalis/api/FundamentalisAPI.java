@@ -158,7 +158,7 @@ public abstract class FundamentalisAPI {
      *
      * @return the status effect type registry
      */
-    public abstract IStatusEffectRegistry getStatusEffectRegistry();
+//    public abstract IStatusEffectRegistry getStatusEffectRegistry();
 
     /**
      * Returns the typed {@link ComponentKey} used to access an
@@ -175,7 +175,7 @@ public abstract class FundamentalisAPI {
      *
      * @return the typed key for the status component
      */
-    public abstract ComponentKey<IStatusComponent> getStatusComponentKey();
+//    public abstract ComponentKey<IStatusComponent> getStatusComponentKey();
 
     /**
      * Returns the API version string (e.g. {@code "2.0.0"}).

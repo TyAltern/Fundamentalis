@@ -223,6 +223,11 @@ public final class FundamentalisCorePlugin extends JavaPlugin {
                 coreConfig.isDebugLog(),
                 coreConfig.getAutoSaveInterval()
         );
+        // Injection différée pour éviter la dépendance circulaire au constructeur —
+        // EntityService est créé à l'étape 5, StatsManager à l'étape 6.
+        // On injecte ici, après que les deux existent.
+        statsManager.setEntityService(entityService);
+
         statsManager.start();
         getLogger().info("[6/9] StatsManager démarré (auto-save : "
                 + coreConfig.getAutoSaveInterval() + " ticks).");
