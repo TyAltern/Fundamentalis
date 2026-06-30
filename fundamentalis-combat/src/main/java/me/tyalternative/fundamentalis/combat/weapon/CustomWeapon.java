@@ -1,12 +1,12 @@
 package me.tyalternative.fundamentalis.combat.weapon;
 
 import com.google.common.collect.HashMultimap;
+import me.tyalternative.fundamentalis.combat.damage.AttackType;
 import me.tyalternative.fundamentalis.combat.damage.DamageInfo;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -22,8 +22,7 @@ import java.util.List;
  * <p>Une instance de {@code CustomWeapon} est un objet de configuration
  * immuable, partagé par toutes les copies de l'item en jeu. L'identification
  * d'un {@link ItemStack} comme étant telle ou telle arme se fait via une clé
- * de Persistent Data Container ({@code "weapon_id"}), lue par
- * {@link WeaponRegistry#getFromItemStack(ItemStack)}.
+ * de Persistent Data Container ({@code "weapon_id"}).
  */
 public class CustomWeapon {
 
@@ -208,6 +207,10 @@ public class CustomWeapon {
      * @param info le contexte complet du dégât porté
      */
     public void onHitEffect(DamageInfo info) {
+        // Pas d'effet par défaut — à surcharger par les sous-classes d'arme.
+    }
+
+    public void onPreHitEffect(DamageInfo info) {
         // Pas d'effet par défaut — à surcharger par les sous-classes d'arme.
     }
 

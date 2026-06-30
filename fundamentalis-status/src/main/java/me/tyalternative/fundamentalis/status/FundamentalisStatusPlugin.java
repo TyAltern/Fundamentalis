@@ -19,9 +19,7 @@ import me.tyalternative.fundamentalis.status.effects.DoT.InfernalBurnEffect;
 import me.tyalternative.fundamentalis.status.effects.DoT.PoisonEffect;
 
 import me.tyalternative.fundamentalis.status.effects.StatModifier.*;
-import me.tyalternative.fundamentalis.status.effects.special.DenialEffect;
-import me.tyalternative.fundamentalis.status.effects.special.ThornsEffect;
-import me.tyalternative.fundamentalis.status.effects.special.VampirismEffect;
+import me.tyalternative.fundamentalis.status.effects.special.*;
 import me.tyalternative.fundamentalis.status.listener.BlockVanillaEffectListener;
 import me.tyalternative.fundamentalis.status.listener.CrowdControlListener;
 import me.tyalternative.fundamentalis.status.listener.DeathCleanupListener;
@@ -176,6 +174,8 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
         registry.register(StatusEffectTypes.VAMPIRISM);
         registry.register(StatusEffectTypes.THORNS);
         registry.register(StatusEffectTypes.DENIAL);
+        registry.register(StatusEffectTypes.BLOODLUST);
+        registry.register(StatusEffectTypes.CHAIN);
     }
 
     // -------------------------------------------------------------------------
@@ -234,6 +234,10 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
                 (holder, stats, meta) -> new ThornsEffect(holder, stats, meta, this, damageManager));
         registry.register(StatusEffectTypes.DENIAL,
                 (holder, stats, meta) -> new DenialEffect(holder, stats, meta, this, damageManager));
+        registry.register(StatusEffectTypes.BLOODLUST,
+                (holder, stats, meta) -> new BloodLustEffect(holder, stats, meta, this, damageManager));
+        registry.register(StatusEffectTypes.CHAIN,
+                (holder, stats, meta) -> new ChainEffect(holder, stats, meta, this, damageManager));
     }
 
     // -------------------------------------------------------------------------

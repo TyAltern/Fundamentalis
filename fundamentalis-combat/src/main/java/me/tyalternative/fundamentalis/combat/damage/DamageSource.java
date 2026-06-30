@@ -37,6 +37,9 @@ public enum DamageSource {
     /** Effet de statut : dénégation (réservé à fundamentalis-status). */
     STATUS_DENIAL,
 
+    /** Effet de statut : enchaîné (réservé à fundamentalis-status). */
+    STATUS_CHAIN,
+
     /** Sort actif (réservé à fundamentalis-spells). */
     SPELL_ACTIVE,
 

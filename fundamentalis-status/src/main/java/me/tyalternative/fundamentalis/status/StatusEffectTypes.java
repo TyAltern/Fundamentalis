@@ -79,7 +79,7 @@ public class StatusEffectTypes {
     /** Resistance — augmente la résistance, 3 niveaux, 30s par défaut. */
     public static final StatusEffectType TOUGHNESS = StatusEffectType.of("toughness", StatusEffectCategory.STAT_MODIFIER, 3, 600);
 
-    /** Soin instantané — soigne instantanément, 10 niveaux, 0.5s par défaut. */
+    /** Soin Instantané — soigne instantanément, 10 niveaux, 0.5s par défaut. */
     public static final StatusEffectType HEAL_BURST = StatusEffectType.of("heal_burst", StatusEffectCategory.STAT_MODIFIER, 10, 10);
 
     /** Absorption — octroi de la vie temporaire supplémentaire, 5 niveaux, 30s par défaut. */
@@ -100,6 +100,12 @@ public class StatusEffectTypes {
 
     /** Dénégation — en magazine tous les dégâts tant que l'effet est actif puis les appliques tous en même temps, 1 niveau, 60s par défaut. */
     public static final StatusEffectType DENIAL = StatusEffectType.of("denial", StatusEffectCategory.SPECIAL, 1, 1200);
+
+    /** Soif de Sang — obtient un bonus de force pour tous les kill réalisés, 3 niveaux, 30s par défaut. */
+    public static final StatusEffectType BLOODLUST = StatusEffectType.of("bloodlust", StatusEffectCategory.SPECIAL, 3, 600);
+
+    /** Enchainement — lie plusieurs entités entre elles et partagent leurs dégâts, 5 niveaux, 30s par défaut. */
+    public static final StatusEffectType CHAIN = StatusEffectType.of("chain", StatusEffectCategory.SPECIAL, 5, 600);
 
     /** Furtivité — effet spécial sur mesure (mécanique à définir par un futur comportement custom), 1 niveau, 20s par défaut. */
     public static final StatusEffectType STEALTH = StatusEffectType.of("stealth", StatusEffectCategory.SPECIAL, 1, 400);
