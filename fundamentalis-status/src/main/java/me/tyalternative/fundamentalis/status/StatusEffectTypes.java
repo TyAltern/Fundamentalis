@@ -30,10 +30,13 @@ public class StatusEffectTypes {
     // -------------------------------------------------------------------------
 
     /** Poison — DoT physique léger, 3 niveaux, 10s par défaut. */
-    public static final StatusEffectType POISON = StatusEffectType.of("poison",StatusEffectCategory.DAMAGE_OVER_TIME, 3, 200);
+    public static final StatusEffectType POISON = StatusEffectType.of("poison",StatusEffectCategory.DAMAGE_OVER_TIME, 4, 200);
 
     /** Brûlure — DoT feu, 3 niveaux, 8s par défaut. */
-    public static final StatusEffectType BURN = StatusEffectType.of("burn", StatusEffectCategory.DAMAGE_OVER_TIME, 3, 160);
+    public static final StatusEffectType BURN = StatusEffectType.of("burn", StatusEffectCategory.DAMAGE_OVER_TIME, 4, 160);
+
+    /** Brûlure infernale (ne peut pas s'étendre avant la fin du temps) — DoT feu, 3 niveaux, 8s par défaut. */
+    public static final StatusEffectType INFERNAL_BURN = StatusEffectType.of("infernal_burn", StatusEffectCategory.DAMAGE_OVER_TIME, 4, 160);
 
     /** Saignement — DoT physique, dégâts proportionnels aux PV max de la victime, 3 niveaux, 6s par défaut. */
     public static final StatusEffectType BLEED = StatusEffectType.of("bleed", StatusEffectCategory.DAMAGE_OVER_TIME, 3, 120);

@@ -120,6 +120,14 @@ public interface IStatusComponent extends Component {
     Collection<ActiveStatusEffect> getAllEffects();
 
     /**
+     * Retourne tous les paliers (actifs et en sommeil) du type précisé.
+     *
+     * @param type le type d'effet recherché
+     * @return collection immuable de tous les paliers connus
+     */
+    Collection<ActiveStatusEffect> getAllEffectsOfType(StatusEffectType type);
+
+    /**
      * Retourne uniquement les paliers actuellement actifs (visibles), un par
      * {@link StatusEffectType} au maximum.
      *

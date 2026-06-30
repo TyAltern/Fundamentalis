@@ -90,6 +90,33 @@ public class CoreAPIImpl extends FundamentalisAPI {
     /**
      * {@inheritDoc}
      *
+     * <p>Retourne le registre enregistré par {@code fundamentalis-status} via
+     * {@link FundamentalisAPI#registerStatusServices}. Retourne {@code null}
+     * si {@code fundamentalis-status} n'est pas chargé — les modules qui en
+     * ont besoin doivent déclarer {@code depend: [fundamentalis-status]} dans
+     * leur {@code plugin.yml}.
+     */
+    @Override
+    public me.tyalternative.fundamentalis.api.status.IStatusEffectRegistry getStatusEffectRegistry() {
+        return FundamentalisAPI.getStoredStatusEffectRegistry();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Retourne la clé enregistrée par {@code fundamentalis-status} via
+     * {@link FundamentalisAPI#registerStatusServices}. Retourne {@code null}
+     * si {@code fundamentalis-status} n'est pas chargé.
+     */
+    @Override
+    public me.tyalternative.fundamentalis.api.component.ComponentKey<
+            me.tyalternative.fundamentalis.api.status.IStatusComponent> getStatusComponentKey() {
+        return FundamentalisAPI.getStoredStatusComponentKey();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
      * @return la version courante de l'API, ex : {@code "2.0.0"}
      */
     @Override

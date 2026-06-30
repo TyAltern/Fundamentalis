@@ -54,6 +54,7 @@ public class PreDamageEvent extends Event implements Cancellable {
     private final DamageType   damageType;
 
     private double  damage;
+    private boolean forceCrit;
     private boolean cancelled;
 
     // -------------------------------------------------------------------------
@@ -101,6 +102,10 @@ public class PreDamageEvent extends Event implements Cancellable {
      * @param damage le nouveau montant — sera clampé à 0 minimum par le pipeline
      */
     public void setDamage(double damage) { this.damage = damage; }
+
+    public boolean isCritForced() { return this.forceCrit; }
+
+    public void setForceCrit(boolean forceCrit) { this.forceCrit = forceCrit; }
 
     // -------------------------------------------------------------------------
     // Cancellable

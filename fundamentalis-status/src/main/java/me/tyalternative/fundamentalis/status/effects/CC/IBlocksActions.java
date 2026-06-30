@@ -1,4 +1,4 @@
-package me.tyalternative.fundamentalis.status.effects;
+package me.tyalternative.fundamentalis.status.effects.CC;
 
 import java.util.Set;
 

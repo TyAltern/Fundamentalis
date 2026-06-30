@@ -9,8 +9,17 @@ import me.tyalternative.fundamentalis.api.status.StatusEffectType;
 import me.tyalternative.fundamentalis.combat.damage.DamageManager;
 import me.tyalternative.fundamentalis.status.command.StatusCommand;
 
+import me.tyalternative.fundamentalis.status.effects.CC.FreezeEffect;
+import me.tyalternative.fundamentalis.status.effects.DoT.BleedEffect;
+import me.tyalternative.fundamentalis.status.effects.DoT.BurnEffect;
+import me.tyalternative.fundamentalis.status.effects.DoT.InfernalBurnEffect;
+import me.tyalternative.fundamentalis.status.effects.DoT.PoisonEffect;
 
+import me.tyalternative.fundamentalis.status.effects.StatModifier.RegenerationEffect;
+import me.tyalternative.fundamentalis.status.effects.StatModifier.StrengthEffect;
+import me.tyalternative.fundamentalis.status.listener.BlockVanillaEffectListener;
 import me.tyalternative.fundamentalis.status.listener.CrowdControlListener;
+import me.tyalternative.fundamentalis.status.listener.DeathCleanupListener;
 import me.tyalternative.fundamentalis.status.listener.StatusAttachListener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -48,6 +57,8 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
 
     private StatusEffectFactoryRegistry factoryRegistry;
     private StatusTicker                ticker;
+    private IEntityService              entityService;
+    ComponentKey<IStatusComponent>      statusKey;
 
     // -------------------------------------------------------------------------
     // onEnable
@@ -58,12 +69,15 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
         getLogger().info("[Status] Démarrage…");
 
         // Étape 1 — Services du Core/Combat via le Service Locator
-        IEntityService                  entityService  = FundamentalisAPI.get().getEntityService();
-        IStatusEffectRegistry           effectRegistry = FundamentalisAPI.get().getStatusEffectRegistry();
-        ComponentKey<IStatusComponent>  statusKey      = FundamentalisAPI.get().getStatusComponentKey();
-        DamageManager                   damageManager  = resolveDamageManager();
+        entityService = FundamentalisAPI.get().getEntityService();
+        var statsKey = FundamentalisAPI.get().getStatsComponentKey();
+        DamageManager damageManager  = resolveDamageManager();
 
         // Étape 2 — Enregistrement des effets intégrés
+        IStatusEffectRegistry effectRegistry = new StatusEffectRegistryImpl(getLogger());
+        statusKey = StatusComponent.KEY;
+        FundamentalisAPI.registerStatusServices(statusKey, effectRegistry);
+
         registerBuiltinEffectTypes(effectRegistry);
         getLogger().info("[1/6] " + effectRegistry.getAll().size() + " effets enregistrés dans le registre.");
 
@@ -73,8 +87,10 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
         getLogger().info("[2/6] Fabriques d'effets associées.");
 
         // Étape 4 — Listeners
-        getServer().getPluginManager().registerEvents(new StatusAttachListener(factoryRegistry), this);
+        getServer().getPluginManager().registerEvents(new BlockVanillaEffectListener(), this);
+        getServer().getPluginManager().registerEvents(new StatusAttachListener(factoryRegistry, statsKey), this);
         getServer().getPluginManager().registerEvents(new CrowdControlListener(entityService, statusKey), this);
+        getServer().getPluginManager().registerEvents(new DeathCleanupListener(entityService, statusKey), this);
         getLogger().info("[3/6] Listeners enregistrés.");
 
         // Étape 5 — Ticker central
@@ -92,6 +108,19 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         if (ticker != null) ticker.stop();
+
+        if (entityService != null && statusKey != null) {
+            int cleared = 0;
+            for (var holder : entityService.getAll()) {
+                var status = holder.get(statusKey).orElse(null);
+                if (status != null) {
+                    status.clearAllEffects();
+                    cleared++;
+                }
+            }
+            getLogger().info("[Status] " + cleared + " composants de statut nettoyés avant arrêt.");
+        }
+
         getLogger().info("[Status] Arrêt terminé.");
     }
 
@@ -121,7 +150,15 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
     // -------------------------------------------------------------------------
 
     private void registerBuiltinEffectTypes(IStatusEffectRegistry registry) {
-        registry.r
+        registry.register(StatusEffectTypes.POISON);
+        registry.register(StatusEffectTypes.BURN);
+        registry.register(StatusEffectTypes.INFERNAL_BURN);
+        registry.register(StatusEffectTypes.BLEED);
+
+        registry.register(StatusEffectTypes.FREEZE);
+
+        registry.register(StatusEffectTypes.STRENGTH);
+        registry.register(StatusEffectTypes.REGENERATION);
     }
 
     // -------------------------------------------------------------------------
@@ -137,12 +174,24 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
     private void registerBuiltinFactories(StatusEffectFactoryRegistry registry, DamageManager damageManager) {
 
         // ----- DoT — chaque effet gère sa propre cadence de tick en interne -----
-
+        registry.register(StatusEffectTypes.POISON,
+                (holder, stats, meta) -> new PoisonEffect(holder, stats, meta, damageManager));
+        registry.register(StatusEffectTypes.BURN,
+                (holder, stats, meta) -> new BurnEffect(holder, stats, meta, this, damageManager));
+        registry.register(StatusEffectTypes.INFERNAL_BURN,
+                (holder, stats, meta) -> new InfernalBurnEffect(holder, stats, meta, damageManager));
+        registry.register(StatusEffectTypes.BLEED,
+                (holder, stats, meta) -> new BleedEffect(holder, stats, meta, damageManager));
 
         // ----- CC -----
-
+        registry.register(StatusEffectTypes.FREEZE,
+                (holder, stats, meta) -> new FreezeEffect(holder, stats, meta, this));
 
         // ----- StatModifier -----
+        registry.register(StatusEffectTypes.STRENGTH,
+                StrengthEffect::new);
+        registry.register(StatusEffectTypes.REGENERATION,
+                (holder, stats, meta) -> new RegenerationEffect(holder, stats, meta, damageManager));
 
 
         // ----- Spécial -----

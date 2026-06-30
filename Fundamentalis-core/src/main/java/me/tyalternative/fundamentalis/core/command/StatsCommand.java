@@ -1,13 +1,12 @@
 package me.tyalternative.fundamentalis.core.command;
 
-
+import me.tyalternative.fundamentalis.api.command.TargetResolver;
 import me.tyalternative.fundamentalis.api.component.ComponentHolder;
 import me.tyalternative.fundamentalis.api.entity.IEntityService;
 import me.tyalternative.fundamentalis.api.event.stats.StatChangeEvent;
 import me.tyalternative.fundamentalis.api.stats.IStatTypeRegistry;
 import me.tyalternative.fundamentalis.api.stats.IStatsComponent;
 import me.tyalternative.fundamentalis.api.stats.StatType;
-import me.tyalternative.fundamentalis.core.component.ComponentHolderImpl;
 import me.tyalternative.fundamentalis.core.stats.StatsComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -35,6 +34,11 @@ import java.util.stream.Collectors;
  *       de base (permission {@code fundamentalis.stats.set}).</li>
  * </ul>
  *
+ * <p>{@code <cible>} accepte soit un nom de joueur en ligne, soit l'UUID
+ * d'une entité quelconque (mob compris) — voir {@link TargetResolver}. Une
+ * entité non encore trackée par Fundamentalis (mob vanilla jamais visé
+ * auparavant) est enregistrée à la volée lors de la résolution.
+ *
  * <p>Cette commande passe exclusivement par {@link IEntityService} et
  * {@link IStatsComponent} — elle ne dépend d'aucune classe concrète du Core
  * pour la lecture/écriture des stats, afin de rester un exemple d'usage
@@ -52,6 +56,9 @@ public class StatsCommand implements CommandExecutor, TabCompleter {
 
     private final IEntityService    entityService;
     private final IStatTypeRegistry statTypeRegistry;
+
+    /** Distance maximale de ray trace pour résoudre l'entité regardée, en blocs. */
+    private static final double LOOK_DISTANCE = 32.0;
 
     // -------------------------------------------------------------------------
     // Constructeur
@@ -76,30 +83,30 @@ public class StatsCommand implements CommandExecutor, TabCompleter {
         // /stats - afficher ses propres stats
         if (args.length == 0) {
             if (!(sender instanceof  Player player)) {
-                sender.sendMessage("§cCette commande nécessite un joueur. Précisez un nom : /stats <joueur>");
+                sender.sendMessage("§cCette commande nécessite une joueur. Précisez un cible : /stats <cible>");
                 return true;
             }
-            displayStats(player, sender);
+            displayStats(entityService.getPlayer(player), player.getName(), sender);
             return true;
         }
 
-        // /stats set|add <joueur> <stat> <valeur>
+        // /stats set|add <cible> <stat> <valeur>
         if (args.length == 4 && (args[0].equalsIgnoreCase("set") || args[0].equalsIgnoreCase("add"))) {
             return handleModify(sender, args);
         }
 
-        // /stats <joueur> — afficher les stats d'un autre joueur
+        // /stats <cible> — afficher les stats d'une autre cible (joueur ou UUID d'entité)
         if (args.length == 1) {
-            Player target = Bukkit.getPlayer(args[0]);
-            if (target == null) {
+            Optional<ComponentHolder> target = TargetResolver.resolve(entityService, args[0]);
+            if (target.isEmpty()) {
                 sender.sendMessage("§cJoueur introuvable : " + args[0]);
                 return true;
             }
-            displayStats(target, sender);
+            displayStats(target.get(), describeTarget(target.get()), sender);
             return true;
         }
 
-        sender.sendMessage("§cUsage : /stats [joueur] | /stats set|add <joueur> <stat> <valeur>");
+        sender.sendMessage("§cUsage : /stats [cible] | /stats set|add <cible> <stat> <valeur>");
         return true;
     }
 
@@ -108,8 +115,8 @@ public class StatsCommand implements CommandExecutor, TabCompleter {
     // -------------------------------------------------------------------------
 
     /**
-     * Traite {@code /stats set <joueur> <stat> <valeur>} et
-     * {@code /stats add <joueur> <stat> <valeur>}.
+     * Traite {@code /stats set <cible> <stat> <valeur>} et
+     * {@code /stats add <cible> <stat> <valeur>}.
      */
     private boolean handleModify(CommandSender sender, String[] args) {
         if (!sender.hasPermission("fundamentalis.stats.set")) {
@@ -119,11 +126,12 @@ public class StatsCommand implements CommandExecutor, TabCompleter {
 
         boolean isSet = args[0].equalsIgnoreCase("set");
 
-        Player target = Bukkit.getPlayer(args[1]);
-        if (target == null) {
-            sender.sendMessage("§cJoueur introuvable : " + args[1]);
+        Optional<ComponentHolder> targetHolder = TargetResolver.resolve(entityService, args[1]);
+        if (targetHolder.isEmpty()) {
+            sender.sendMessage("§cCible introuvable : " + args[1]);
             return true;
         }
+        ComponentHolder holder = targetHolder.get();
 
         Optional<StatType> statType = statTypeRegistry.find(args[2]);
         if (statType.isEmpty()) {
@@ -142,7 +150,6 @@ public class StatsCommand implements CommandExecutor, TabCompleter {
         }
 
         // On passe par le ComponentHolder — jamais d'accès direct à une classe du Core
-        ComponentHolder holder = entityService.getPlayer(target);
         IStatsComponent stats  = holder.require(StatsComponent.KEY);
 
         int applied;
@@ -153,15 +160,16 @@ public class StatsCommand implements CommandExecutor, TabCompleter {
             applied = stats.setBase(statType.get(), applied, StatChangeEvent.Cause.COMMAND);
         }
 
+        String targetName = describeTarget(holder);
         String verb = isSet ? "définie à" : "modifiée, nouvelle valeur :";
-        sender.sendMessage("§a" + statType.get().getId() + " de " + target.getName() + " " + verb + " " + applied);
-        if (!sender.equals(target)) {
-            target.sendMessage("§eVotre " + statType.get().getId() + " a été " + verb + " " + applied);
+        sender.sendMessage("§a" + statType.get().getId() + " de " + targetName + " " + verb + " " + applied);
+
+        if (holder.getEntity() instanceof Player targetPlayer && !sender.equals(targetPlayer)) {
+            targetPlayer.sendMessage("§eVotre " + statType.get().getId() + " a été " + verb + " " + applied);
         }
 
         return true;
     }
-
 
     // -------------------------------------------------------------------------
     // Affichage
@@ -174,11 +182,11 @@ public class StatsCommand implements CommandExecutor, TabCompleter {
      * fixe, afin d'afficher automatiquement les stats custom ajoutées par
      * d'autres modules.
      */
-    private void displayStats(Player target, CommandSender viewer) {
-        ComponentHolder holder = entityService.getPlayer(target);
+    private void displayStats(ComponentHolder holder, String targetName, CommandSender viewer) {
         IStatsComponent stats  = holder.require(StatsComponent.KEY);
 
-        String title = viewer.equals(target) ? "Vos statistiques" : "Statistiques de " + target.getName();
+        boolean isSelf = holder.getEntity() instanceof Player p && viewer.equals(p);
+        String title = isSelf ? "Vos statistiques" : "Statistiques de " + targetName;
         viewer.sendMessage("§6========== " + title + " ==========");
 
         for (StatType type : statTypeRegistry.getAll()) {
@@ -188,9 +196,18 @@ public class StatsCommand implements CommandExecutor, TabCompleter {
         }
 
         viewer.sendMessage("§6" + "=".repeat(20 + title.length()));
-
     }
 
+    /**
+     * Construit un nom lisible pour une cible — nom du joueur, ou type
+     * d'entité + UUID tronqué pour un mob.
+     */
+    private String describeTarget(ComponentHolder holder) {
+        var entity = holder.getEntity();
+        if (entity instanceof Player player) return player.getName();
+        if (entity == null) return "entité inconnue";
+        return entity.getType().name() + " (" + holder.getEntityId().substring(0, 8) + "…)";
+    }
 
     // -------------------------------------------------------------------------
     // Tab-complete
@@ -203,9 +220,9 @@ public class StatsCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1) {
             completions.add("set");
             completions.add("add");
-            Bukkit.getOnlinePlayers().forEach(p -> completions.add(p.getName()));
+            completions.addAll(TargetResolver.completeTargets(sender, LOOK_DISTANCE));
         } else if (args.length == 2 && (args[0].equalsIgnoreCase("set") || args[0].equalsIgnoreCase("add"))) {
-            Bukkit.getOnlinePlayers().forEach(p -> completions.add(p.getName()));
+            completions.addAll(TargetResolver.completeTargets(sender, LOOK_DISTANCE));
         } else if (args.length == 3 && (args[0].equalsIgnoreCase("set") || args[0].equalsIgnoreCase("add"))) {
             statTypeRegistry.getAll().forEach(p -> completions.add(p.getId()));
         }
@@ -215,6 +232,4 @@ public class StatsCommand implements CommandExecutor, TabCompleter {
                 .filter(s -> s.toLowerCase().startsWith(partial))
                 .collect(Collectors.toList());
     }
-
-
 }

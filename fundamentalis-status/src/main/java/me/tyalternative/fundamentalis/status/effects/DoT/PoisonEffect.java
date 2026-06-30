@@ -1,4 +1,4 @@
-package me.tyalternative.fundamentalis.status.effects;
+package me.tyalternative.fundamentalis.status.effects.DoT;
 
 import me.tyalternative.fundamentalis.api.combat.DamageType;
 import me.tyalternative.fundamentalis.api.component.ComponentHolder;
@@ -9,10 +9,12 @@ import me.tyalternative.fundamentalis.combat.damage.DamageManager;
 import me.tyalternative.fundamentalis.combat.damage.DamageSource;
 import me.tyalternative.fundamentalis.status.StatusEffect;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 /**
- * Poison — dégâts sur la durée, un tick toutes les secondes, intensité
- * proportionnelle au niveau (1 dégât/tick par niveau).
+ * Poison — dégâts sur la durée, un tick toutes les x ticks, fréquence
+ * proportionnelle au niveau.
  *
  * <p>Illustre le cas le plus simple d'effet à état : un compteur de ticks
  * interne ({@link #ticksSinceLastDamage}) pour espacer les applications de
@@ -28,7 +30,8 @@ public class PoisonEffect extends StatusEffect {
     // -------------------------------------------------------------------------
 
     private static final long   TICK_INTERVAL  = 20L; // un tick de dégâts par seconde
-    private static final double DAMAGE_PER_LEVEL = 1.0;
+    private static final long   TICK_REDUCTION_PER_LEVEL = 5L;
+    private static final double DAMAGE_TICK = 1.0;
 
     // -------------------------------------------------------------------------
     // Champs
@@ -57,25 +60,26 @@ public class PoisonEffect extends StatusEffect {
     public void onApply() {
         ticksSinceLastDamage = 0;
 
+        getEntity().addPotionEffect(new PotionEffect(PotionEffectType.POISON, (int) Math.ceil((double) getDuration()),0, false, false, false));
     }
 
     @Override
     public void onTick() {
         ticksSinceLastDamage++;
-        if (ticksSinceLastDamage < TICK_INTERVAL) return;
+        if (ticksSinceLastDamage < Math.max(5L, TICK_INTERVAL - ( TICK_REDUCTION_PER_LEVEL * (getLevel()-1) ))) return;
         ticksSinceLastDamage = 0;
+
+        if (getEntity().getHealth() == 1) return;
 
         LivingEntity victim = getEntity();
         if (victim == null || !victim.isValid()) return;
 
-        double damage = getLevel() * DAMAGE_PER_LEVEL;
         DamageInfo info = damageManager.createStatusDamage(
-                victim, DamageSource.STATUS_POISON, damage, DamageType.PHYSICAL);
+                victim, DamageSource.STATUS_POISON, DAMAGE_TICK, DamageType.PHYSICAL);
         damageManager.dealDamage(info);
     }
 
     @Override
     public void onRemove() {
-        // Rien à nettoyer — le poison n'a pas d'effet persistant en dehors de ses ticks.
     }
 }

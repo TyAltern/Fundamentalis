@@ -6,7 +6,7 @@ import me.tyalternative.fundamentalis.api.status.ActiveStatusEffect;
 import me.tyalternative.fundamentalis.api.status.IStatusComponent;
 import me.tyalternative.fundamentalis.status.StatusComponent;
 import me.tyalternative.fundamentalis.status.StatusEffect;
-import me.tyalternative.fundamentalis.status.effects.IBlocksActions;
+import me.tyalternative.fundamentalis.status.effects.CC.IBlocksActions;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;

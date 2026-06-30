@@ -1,5 +1,6 @@
 package me.tyalternative.fundamentalis.status.command;
 
+import me.tyalternative.fundamentalis.api.command.TargetResolver;
 import me.tyalternative.fundamentalis.api.component.ComponentHolder;
 import me.tyalternative.fundamentalis.api.component.ComponentKey;
 import me.tyalternative.fundamentalis.api.entity.IEntityService;
@@ -32,6 +33,12 @@ import java.util.stream.Collectors;
  *   <li>{@code /status list <joueur>} — liste les effets actifs et en sommeil d'un joueur.</li>
  * </ul>
  *
+ * <p>{@code <cible>} accepte soit un nom de joueur en ligne, soit l'UUID
+ * d'une entité quelconque (mob compris) — voir {@link TargetResolver}. Une
+ * entité non encore trackée par Fundamentalis (mob vanilla jamais visé
+ * auparavant) est enregistrée à la volée lors de la résolution, et reçoit
+ * automatiquement un {@code StatusComponent} via {@code StatusAttachListener}.
+ *
  * <p>Comme {@code StatsCommand} dans le Core, cette commande passe
  * exclusivement par les interfaces de l'API ({@link IEntityService},
  * {@link IStatusComponent}, {@link IStatusEffectRegistry}) — jamais par les
@@ -47,6 +54,9 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
     private final IStatusEffectRegistry           effectRegistry;
     private final ComponentKey<IStatusComponent>  statusKey;
 
+    /** Distance maximale de ray trace pour résoudre l'entité regardée, en blocs. */
+    private static final double LOOK_DISTANCE = 32.0;
+
     // -------------------------------------------------------------------------
     // Constructeur
     // -------------------------------------------------------------------------
@@ -59,8 +69,8 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
     public StatusCommand(IEntityService entityService, IStatusEffectRegistry effectRegistry,
                          ComponentKey<IStatusComponent> statusKey) {
         this.entityService  = entityService;
-        this.effectRegistry  = effectRegistry;
-        this.statusKey       = statusKey;
+        this.effectRegistry = effectRegistry;
+        this.statusKey      = statusKey;
     }
 
     // -------------------------------------------------------------------------
@@ -70,7 +80,7 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage("§cUsage : /status give|clear|list <joueur> ...");
+            sender.sendMessage("§cUsage : /status give|clear|list <cible> ...");
             return true;
         }
 
@@ -86,7 +96,7 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
     }
 
     // -------------------------------------------------------------------------
-    // /status give <joueur> <effet> <niveau> [durée_ticks]
+    // /status give <cible> <effet> <niveau> [durée_ticks]
     // -------------------------------------------------------------------------
 
     private boolean handleGive(CommandSender sender, String[] args) {
@@ -95,15 +105,16 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         if (args.length < 4) {
-            sender.sendMessage("§cUsage : /status give <joueur> <effet> <niveau> [durée_ticks]");
+            sender.sendMessage("§cUsage : /status give <cible> <effet> <niveau> [durée_ticks]");
             return true;
         }
 
-        Player target = Bukkit.getPlayer(args[1]);
-        if (target == null) {
-            sender.sendMessage("§cJoueur introuvable : " + args[1]);
+        Optional<ComponentHolder> targetHolder = TargetResolver.resolve(entityService, args[1]);
+        if (targetHolder.isEmpty()) {
+            sender.sendMessage("§cCible introuvable : " + args[1]);
             return true;
         }
+        ComponentHolder holder = targetHolder.get();
 
         Optional<StatusEffectType> type = effectRegistry.find(args[2]);
         if (type.isEmpty()) {
@@ -131,23 +142,22 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
             }
         }
 
-        ComponentHolder holder = entityService.getPlayer(target);
         IStatusComponent status = holder.require(statusKey);
-
         ActiveStatusEffect applied = status.applyEffect(
                 type.get(), level, duration, "command:" + sender.getName());
 
+        String targetName = describeTarget(holder);
         sender.sendMessage("§a" + type.get().getId() + " niveau " + applied.level()
-                + " appliqué à " + target.getName() + " pour " + duration + " ticks.");
-        if (!sender.equals(target)) {
-            target.sendMessage("§eVous subissez " + type.get().getId() + " niveau " + applied.level() + ".");
+                + " appliqué à " + targetName + " pour " + duration + " ticks.");
+        if (holder.getEntity() instanceof Player targetPlayer && !sender.equals(targetPlayer)) {
+            targetPlayer.sendMessage("§eVous subissez " + type.get().getId() + " niveau " + applied.level() + ".");
         }
 
         return true;
     }
 
     // -------------------------------------------------------------------------
-    // /status clear <joueur> [effet]
+    // /status clear <cible> [effet]
     // -------------------------------------------------------------------------
 
     private boolean handleClear(CommandSender sender, String[] args) {
@@ -156,18 +166,18 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         if (args.length < 2) {
-            sender.sendMessage("§cUsage : /status clear <joueur> [effet]");
+            sender.sendMessage("§cUsage : /status clear <cible> [effet]");
             return true;
         }
 
-        Player target = Bukkit.getPlayer(args[1]);
-        if (target == null) {
-            sender.sendMessage("§cJoueur introuvable : " + args[1]);
+        Optional<ComponentHolder> targetHolder = TargetResolver.resolve(entityService, args[1]);
+        if (targetHolder.isEmpty()) {
+            sender.sendMessage("§cCible introuvable : " + args[1]);
             return true;
         }
-
-        ComponentHolder holder = entityService.getPlayer(target);
+        ComponentHolder holder = targetHolder.get();
         IStatusComponent status = holder.require(statusKey);
+        String targetName = describeTarget(holder);
 
         if (args.length >= 3) {
             Optional<StatusEffectType> type = effectRegistry.find(args[2]);
@@ -177,51 +187,69 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
             }
             boolean removed = status.removeEffect(type.get());
             sender.sendMessage(removed
-                    ? "§a" + type.get().getId() + " retiré de " + target.getName() + "."
-                    : "§7" + target.getName() + " n'avait pas cet effet actif.");
+                    ? "§a" + type.get().getId() + " retiré de " + targetName + "."
+                    : "§7" + targetName + " n'avait pas cet effet actif.");
         } else {
             status.clearAllEffects();
-            sender.sendMessage("§aTous les effets de " + target.getName() + " ont été retirés.");
+            sender.sendMessage("§aTous les effets de " + targetName + " ont été retirés.");
         }
 
         return true;
     }
 
     // -------------------------------------------------------------------------
-    // /status list <joueur>
+    // /status list <cible>
     // -------------------------------------------------------------------------
 
     private boolean handleList(CommandSender sender, String[] args) {
-        Player target;
+        ComponentHolder holder;
+
         if (args.length >= 2) {
-            target = Bukkit.getPlayer(args[1]);
-            if (target == null) {
-                sender.sendMessage("§cJoueur introuvable : " + args[1]);
+            Optional<ComponentHolder> targetHolder = TargetResolver.resolve(entityService, args[1]);
+            if (targetHolder.isEmpty()) {
+                sender.sendMessage("§cCible introuvable : " + args[1]);
                 return true;
             }
+            holder = targetHolder.get();
         } else if (sender instanceof Player senderPlayer) {
-            target = senderPlayer;
+            holder = entityService.getPlayer(senderPlayer);
         } else {
-            sender.sendMessage("§cPrécisez un joueur : /status list <joueur>");
+            sender.sendMessage("§cPrécisez une cible : /status list <cible>");
             return true;
         }
 
-        ComponentHolder holder = entityService.getPlayer(target);
         IStatusComponent status = holder.require(statusKey);
+        String targetName = describeTarget(holder);
 
-        sender.sendMessage("§6========== Effets de " + target.getName() + " ==========");
+        sender.sendMessage("§6========== Effets de " + targetName + " ==========");
         if (status.getAllEffects().isEmpty()) {
             sender.sendMessage("§7Aucun effet actif.");
         }
         for (ActiveStatusEffect effect : status.getAllEffects()) {
             String state = effect.active() ? "§a[actif]" : "§7[en sommeil]";
-            sender.sendMessage("§7- §f" + effect.type().getId() + " §7niveau " + effect.level() + " " + state);
+            String duration = String.format("%.1f", (double) effect.remainingTicks(Bukkit.getCurrentTick())/20);
+            String durationStr = effect.active() ? "§a(" + duration + "s)" : "§7(" + duration + "s)";
+            sender.sendMessage("§7- §f" + effect.type().getId() + " §7niveau " + effect.level()  + " " + durationStr + " " + state);
         }
         sender.sendMessage("§6==========================================");
 
         return true;
     }
 
+    // -------------------------------------------------------------------------
+    // Utilitaire
+    // -------------------------------------------------------------------------
+
+    /**
+     * Construit un nom lisible pour une cible — nom du joueur, ou type
+     * d'entité + UUID tronqué pour un mob.
+     */
+    private String describeTarget(ComponentHolder holder) {
+        var entity = holder.getEntity();
+        if (entity instanceof Player player) return player.getName();
+        if (entity == null) return "entité inconnue";
+        return entity.getType().name() + " (" + holder.getEntityId().substring(0, 8) + "…)";
+    }
 
     // -------------------------------------------------------------------------
     // Tab-complete
@@ -236,7 +264,7 @@ public class StatusCommand implements CommandExecutor, TabCompleter {
             completions.add("clear");
             completions.add("list");
         } else if (args.length == 2) {
-            Bukkit.getOnlinePlayers().forEach(p -> completions.add(p.getName()));
+            completions.addAll(TargetResolver.completeTargets(sender, LOOK_DISTANCE));
         } else if (args.length == 3 && !args[0].equalsIgnoreCase("list")) {
             effectRegistry.getAll().forEach(type -> completions.add(type.getId()));
         }

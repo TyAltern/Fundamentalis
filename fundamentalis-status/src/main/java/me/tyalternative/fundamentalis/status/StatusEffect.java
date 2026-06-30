@@ -6,6 +6,7 @@ import me.tyalternative.fundamentalis.api.stats.IStatsComponent;
 import me.tyalternative.fundamentalis.api.status.ActiveStatusEffect;
 import me.tyalternative.fundamentalis.api.status.IStatusComponent;
 import me.tyalternative.fundamentalis.api.status.StatusEffectType;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 
 import java.util.UUID;
@@ -123,6 +124,11 @@ public abstract class StatusEffect {
 
     /** @return le niveau courant de ce palier */
     protected int getLevel() { return meta.level(); }
+
+    /** @return le temps restant de l'effet */
+    protected long getDuration() { return meta.remainingTicks(Bukkit.getCurrentTick()); }
+    /** @return le temps restant de l'effet */
+    protected int getDurationInt() { return Math.toIntExact(meta.remainingTicks(Bukkit.getCurrentTick())); }
 
     /** @return le type d'effet de ce palier */
     protected StatusEffectType getType() { return meta.type(); }

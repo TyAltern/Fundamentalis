@@ -112,6 +112,47 @@ public class EntityTracker implements Listener {
     }
 
     // -------------------------------------------------------------------------
+    // Enregistrement à la volée (API_CALL) — entités non-joueur ciblées par
+    // une commande ou un appel d'API (ex : IEntityService#getOrRegister)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Attache un {@link StatsComponent} à toute entité enregistrée via
+     * {@link EntityRegisteredEvent.Cause#API_CALL} — typiquement un mob
+     * vanilla ciblé par {@code /stats give} ou {@code /status give} sans
+     * avoir jamais été enregistré auparavant.
+     *
+     * <p>Le cas {@code PLAYER_JOIN} est déjà géré directement dans
+     * {@link #onPlayerJoin}, donc explicitement ignoré ici pour éviter un
+     * double appel à {@code createAndLoad}. Les autres causes
+     * ({@code MOB_SPAWN}, {@code BOSS_SPAWN}) sont traitées de la même façon
+     * que {@code API_CALL} : ce sont toutes des entités non-joueur dont les
+     * stats utilisent le repository {@code entity_stats} (volatile).
+     *
+     * <p>Priorité {@link EventPriority#LOWEST} pour cohérence avec
+     * {@link #onPlayerJoin} : le Core doit attacher son composant avant que
+     * les autres modules (Combat, Status) ne réagissent au même event.
+     */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onEntityRegistered(EntityRegisteredEvent event) {
+        if (event.getCause() == EntityRegisteredEvent.Cause.PLAYER_JOIN) return;
+
+        ComponentHolder holder = event.getHolder();
+        LivingEntity    entity = holder.getEntity();
+        if (entity == null) return;
+
+        // Si un StatsComponent existe déjà (cas improbable mais défensif),
+        // on ne le recrée pas.
+        if (holder.has(StatsComponent.KEY)) return;
+
+        boolean isPlayer = entity instanceof Player;
+        statsManager.createAndLoad(holder, entity.getUniqueId(), isPlayer);
+
+        logger.fine("[EntityTracker] StatsComponent attaché à l'entité " + entity.getUniqueId()
+                + " (cause : " + event.getCause() + ")");
+    }
+
+    // -------------------------------------------------------------------------
     // Déconnexion d'un joueur
     // -------------------------------------------------------------------------
 

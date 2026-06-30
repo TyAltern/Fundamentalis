@@ -14,10 +14,10 @@ softdepend: []
 
 commands:
   stats:
-    description: "Consulter ou modifier les statistiques d'un joueur"
-    usage: "/stats [joueur] | /stats set|add <joueur> <stat> <valeur>"
+    description: "Consulter ou modifier les statistiques d'une cible"
+    usage: "/stats [cible] | /stats set|add <cible> <stat> <valeur>"
 
 permissions:
   fundamentalis.stats.set:
-    description: "Permet de modifier les stats de base d'un joueur via /stats set|add"
+    description: "Permet de modifier les stats de base d'une cible via /stats set|add"
     default: op

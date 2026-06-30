@@ -126,10 +126,13 @@ public class EffectTierEngine {
             boolean hasExpired = tiers.stream().anyMatch(t -> t.isExpired(currentTick));
             if(!hasExpired) continue;
 
+            ActiveStatusEffect previousActiveBeforePurge =
+                    tiers.stream().filter(ActiveStatusEffect::active).findFirst().orElse(null);
+
             tiers.removeIf(t -> t.isExpired(currentTick));
             if (tiers.isEmpty()) tiersByType.remove(type);
 
-            changes.add(recomputeActive(type, currentTick));
+            changes.add(recomputeActive(type, currentTick, previousActiveBeforePurge));
         }
 
         return changes;
@@ -182,16 +185,34 @@ public class EffectTierEngine {
      * niveau le plus élevé, le marque actif, et marque tous les autres en
      * sommeil. En cas d'égalité de niveau entre plusieurs paliers, celui dont
      * l'expiration est la plus tardive est choisi (le plus "résistant").
+     *
+     * <p>Calcule {@code previousActive} en lisant la liste courante — à
+     * utiliser uniquement quand la liste n'a <strong>pas encore</strong> été
+     * mutée (cas {@link #addTier} / {@link #removeTier}, qui appellent ce
+     * recalcul avant toute purge). Pour le cas {@link #tick}, où la liste a
+     * déjà été amputée des paliers expirés avant l'appel, utiliser la
+     * surcharge {@link #recomputeActive(StatusEffectType, long, ActiveStatusEffect)}
+     * qui accepte un {@code previousActive} pré-capturé.
      */
     private TierChangeResult recomputeActive(StatusEffectType type, long currentTick) {
         List<ActiveStatusEffect> tiers = tiersByType.get(type);
+        ActiveStatusEffect previousActive = tiers == null ? null :
+                tiers.stream().filter(ActiveStatusEffect::active).findFirst().orElse(null);
+        return recomputeActive(type, currentTick, previousActive);
+    }
 
-        ActiveStatusEffect previousActive = null;
-        ActiveStatusEffect newActive      = null;
+    /**
+     * Détermine, parmi tous les paliers non expirés d'un type, celui de
+     * niveau le plus élevé, le marque actif, et marque tous les autres en
+     * sommeil. En cas d'égalité de niveau entre plusieurs paliers, celui dont
+     * l'expiration est la plus tardive est choisi (le plus "résistant").
+     */
+    private TierChangeResult recomputeActive(StatusEffectType type, long currentTick, ActiveStatusEffect previousActive) {
+        List<ActiveStatusEffect> tiers = tiersByType.get(type);
+
+        ActiveStatusEffect newActive = null;
 
         if (tiers != null) {
-            previousActive = tiers.stream().filter(ActiveStatusEffect::active).findFirst().orElse(null);
-
             newActive = tiers.stream()
                     .filter(t -> !t.isExpired(currentTick))
                     .max(Comparator.comparingInt(ActiveStatusEffect::level)

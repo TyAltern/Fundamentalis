@@ -1,6 +1,7 @@
 package me.tyalternative.fundamentalis.status.listener;
 
 import me.tyalternative.fundamentalis.api.FundamentalisAPI;
+import me.tyalternative.fundamentalis.api.component.ComponentKey;
 import me.tyalternative.fundamentalis.api.event.entity.EntityRegisteredEvent;
 import me.tyalternative.fundamentalis.api.stats.IStatsComponent;
 import me.tyalternative.fundamentalis.status.StatusComponent;
@@ -26,6 +27,7 @@ public class StatusAttachListener implements Listener {
     // -------------------------------------------------------------------------
 
     private final StatusEffectFactoryRegistry factoryRegistry;
+    private final ComponentKey<IStatsComponent> statsKey;
 
     // -------------------------------------------------------------------------
     // Constructeur
@@ -34,8 +36,9 @@ public class StatusAttachListener implements Listener {
     /**
      * @param factoryRegistry registre des fabriques d'effets, transmis à chaque nouveau StatusComponent
      */
-    public StatusAttachListener(StatusEffectFactoryRegistry factoryRegistry) {
+    public StatusAttachListener(StatusEffectFactoryRegistry factoryRegistry, ComponentKey<IStatsComponent> statsKey) {
         this.factoryRegistry = factoryRegistry;
+        this.statsKey        = statsKey;
     }
 
     // -------------------------------------------------------------------------
@@ -52,9 +55,7 @@ public class StatusAttachListener implements Listener {
         // Le composant de stats n'est pas garanti présent (entité trackée sans
         // stats RPG) - on transmet null dans ce cas, les effets STAT_MODIFIER
         // deviennent alors silencieusement no-op (voir StrengthEffect par exemple).
-        IStatsComponent stats = holder.get(
-                FundamentalisAPI.get().getStatsComponentKey()
-        ).orElse(null);
+        IStatsComponent stats = holder.get(statsKey).orElse(null);
 
         StatusComponent statusComponent = new StatusComponent(holder, factoryRegistry, stats);
         holder.attach(StatusComponent.KEY, statusComponent);

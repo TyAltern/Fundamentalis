@@ -114,7 +114,7 @@ public class DamageManager {
         double originalDamage   = damage;
         double reductionDefense = 0;
         double reductionEffects = 0;
-        double bonusEffects      = 0;
+        double bonusEffects     = 0;
         boolean isKill          = false;
 
         // ========== 1. VÉRIFICATIONS PRÉLIMINAIRES (cooldown d'attaque) ==========
@@ -141,6 +141,8 @@ public class DamageManager {
             info.setFinalDamage(0);
             return new DamageResult(originalDamage, 0, false, true, true, false, wasCharged, 0, 0, 0);
         }
+
+        info.setForcedCrit(preEvent.isCritForced());
         damage = preEvent.getDamage();
 
         // ========== 3. APPLICATION STATS ATTAQUANT (FORCE) ==========

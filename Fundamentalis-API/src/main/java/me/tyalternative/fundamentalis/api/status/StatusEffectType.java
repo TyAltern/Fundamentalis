@@ -58,12 +58,20 @@ public final class StatusEffectType {
     /** Durée par défaut en ticks, utilisée si aucune durée explicite n'est fournie à l'application. */
     private final long defaultDurationTicks;
 
+    /**
+     * Si {@code true}, ce type d'effet n'est PAS retiré automatiquement à la
+     * mort de l'entité affectée. {@code false} par défaut : la grande
+     * majorité des effets (DoT, CC, buffs de combat) n'a pas de sens à
+     * survivre à une mort/respawn.
+     */
+    private final boolean survivesDeath;
+
     // -------------------------------------------------------------------------
     // Constructeur & factory
     // -------------------------------------------------------------------------
 
     private StatusEffectType(String id, StatusEffectCategory category,
-                             int maxLevel, long defaultDurationTicks) {
+                             int maxLevel, long defaultDurationTicks, boolean survivesDeath) {
         if (id == null || id.isBlank())
             throw new IllegalArgumentException("L'id d'un StatusEffectType ne peut pas être vide");
         if (category == null)
@@ -77,6 +85,7 @@ public final class StatusEffectType {
         this.category             = category;
         this.maxLevel             = maxLevel;
         this.defaultDurationTicks = defaultDurationTicks;
+        this.survivesDeath        = survivesDeath;
     }
 
     /**
@@ -90,7 +99,27 @@ public final class StatusEffectType {
      */
     public static StatusEffectType of(String id, StatusEffectCategory category,
                                       int maxLevel, long defaultDurationTicks) {
-        return new StatusEffectType(id, category, maxLevel, defaultDurationTicks);
+        return new StatusEffectType(id, category, maxLevel, defaultDurationTicks, false);
+    }
+
+    /**
+     * Crée un nouveau {@code StatusEffectType} en choisissant explicitement
+     * s'il doit survivre à la mort de l'entité affectée.
+     *
+     * <p>Réserver {@code survivesDeath = true} aux effets pour lesquels ça a
+     * un sens gameplay explicite (ex : une malédiction longue durée, un buff
+     * de classe persistant) — ce n'est pas le comportement par défaut.
+     *
+     * @param id                   identifiant unique (ex : {@code "curse"})
+     * @param category             famille de comportement de l'effet
+     * @param maxLevel             niveau maximum atteignable (≥ 1)
+     * @param defaultDurationTicks durée par défaut en ticks si aucune durée explicite n'est donnée
+     * @param survivesDeath        {@code true} si cet effet ne doit PAS être retiré à la mort
+     * @return une instance immuable de {@code StatusEffectType}
+     */
+    public static StatusEffectType of(String id, StatusEffectCategory category,
+                                      int maxLevel, long defaultDurationTicks, boolean survivesDeath) {
+        return new StatusEffectType(id, category, maxLevel, defaultDurationTicks, survivesDeath);
     }
 
     // -------------------------------------------------------------------------
@@ -122,6 +151,12 @@ public final class StatusEffectType {
 
     /** @return la durée par défaut en ticks si aucune durée explicite n'est fournie */
     public long getDefaultDurationTicks() { return defaultDurationTicks; }
+
+    /**
+     * @return {@code true} si cet effet n'est PAS retiré automatiquement à la
+     *         mort de l'entité affectée ({@code false} par défaut)
+     */
+    public boolean survivesDeath() { return survivesDeath; }
 
     // -------------------------------------------------------------------------
     // equals / hashCode / toString - identité basée sur l'id uniquement

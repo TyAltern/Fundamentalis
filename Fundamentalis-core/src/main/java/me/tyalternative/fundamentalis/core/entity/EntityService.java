@@ -2,7 +2,9 @@ package me.tyalternative.fundamentalis.core.entity;
 
 import me.tyalternative.fundamentalis.api.component.ComponentHolder;
 import me.tyalternative.fundamentalis.api.entity.IEntityService;
+import me.tyalternative.fundamentalis.api.event.entity.EntityRegisteredEvent;
 import me.tyalternative.fundamentalis.core.component.ComponentHolderImpl;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -103,6 +105,29 @@ public class EntityService implements IEntityService {
     public boolean isTracked(LivingEntity entity) {
         return entity != null && holders.containsKey(entity.getUniqueId());
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Détermine la {@link EntityRegisteredEvent.Cause} automatiquement :
+     * {@code PLAYER_JOIN} si déjà tracké via le flux normal de connexion
+     * n'a évidemment pas lieu d'être ici (l'entité est forcément déjà
+     * trackée dans ce cas, donc cette branche n'est jamais atteinte côté
+     * joueur) — pour toute entité non encore trackée passée à cette méthode,
+     * la cause est toujours {@link EntityRegisteredEvent.Cause#API_CALL}.
+     */
+    @Override
+    public ComponentHolder getOrRegister(LivingEntity entity) {
+        UUID uuid = entity.getUniqueId();
+        ComponentHolder existing = holders.get(uuid);
+        if (existing != null) return existing;
+
+        ComponentHolder holder = register(entity);
+        Bukkit.getPluginManager().callEvent(
+                new EntityRegisteredEvent(holder, EntityRegisteredEvent.Cause.API_CALL));
+        return holder;
+    }
+
 
     // -------------------------------------------------------------------------
     // Gestion interne du registre (réservé à EntityTracker)

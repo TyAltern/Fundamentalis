@@ -49,7 +49,7 @@ public interface IEntityService {
     Optional<ComponentHolder> get(UUID entityId);
 
     /**
-     * Version raccourcie pour les joueurs — toujours trackés après login.
+     * Version raccourcie pour les joueurs - toujours trackés après login.
      * Équivalent à get(player) mais retourne directement le holder
      * sans Optional, car l'absence d'un joueur trackée est une erreur.
      *
@@ -67,4 +67,26 @@ public interface IEntityService {
      * Indique si cette entité est actuellement trackée.
      */
     boolean isTracked(LivingEntity entity);
+
+    /**
+     * Retourne le {@link ComponentHolder} de cette entité, en l'enregistrant
+     * à la volée si elle n'est pas encore trackée.
+     *
+     * <p>Pensé pour les commandes admin et les modules qui veulent attacher
+     * des composants (stats, statut…) à des entités vanilla qui n'ont jamais
+     * été enregistrées automatiquement (seuls les joueurs le sont à leur
+     * connexion - voir {@link me.tyalternative.fundamentalis.api.event.entity.EntityRegisteredEvent.Cause#PLAYER_JOIN PLAYER_JOIN}).
+     *
+     * <p>Si l'entité doit être enregistrée, fire un
+     * {@link me.tyalternative.fundamentalis.api.event.entity.EntityRegisteredEvent EntityRegisteredEvent}
+     * avec la cause {@link me.tyalternative.fundamentalis.api.event.entity.EntityRegisteredEvent.Cause#API_CALL API_CALL},
+     * exactement comme pour tout autre enregistrement - les autres modules
+     * (Core, Combat, Status) attachent alors leurs composants normalement.
+     *
+     * <p>Doit être appelé sur le thread principal Bukkit.
+     *
+     * @param entity l'entité à enregistrer si nécessaire - ne doit pas être {@code null}
+     * @return le {@link ComponentHolder} existant ou nouvellement créé
+     */
+    ComponentHolder getOrRegister(LivingEntity entity);
 }

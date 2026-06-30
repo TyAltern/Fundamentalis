@@ -92,6 +92,51 @@ public abstract class FundamentalisAPI {
     }
 
     // -------------------------------------------------------------------------
+    // Registrations tardives — remplies par les modules après le Core
+    // -------------------------------------------------------------------------
+
+    /**
+     * Clé du composant de statut, enregistrée par {@code fundamentalis-status}
+     * dans son {@code onEnable()} via {@link #registerStatusComponentKey}.
+     * Null tant que le module Status n'est pas chargé.
+     */
+    public static ComponentKey<IStatusComponent> statusComponentKey;
+
+    /**
+     * Registre des types d'effets de statut, enregistré par {@code fundamentalis-status}.
+     * Null tant que le module Status n'est pas chargé.
+     */
+    public static IStatusEffectRegistry statusEffectRegistry;
+
+    /**
+     * Enregistre la clé du composant de statut et le registre des effets.
+     * Appelé par {@code StatusPlugin#onEnable()}.
+     *
+     * @param key      la clé typée du composant {@code IStatusComponent}
+     * @param registry le registre des {@code StatusEffectType}
+     */
+    public static void registerStatusServices(ComponentKey<IStatusComponent> key, IStatusEffectRegistry registry) {
+        statusComponentKey = key;
+        statusEffectRegistry = registry;
+    }
+
+    /**
+     * @return la clé du composant de statut, ou {@code null} si
+     *         {@code fundamentalis-status} n'est pas chargé
+     */
+    public static ComponentKey<IStatusComponent> getStoredStatusComponentKey() {
+        return statusComponentKey;
+    }
+
+    /**
+     * @return le registre des effets de statut, ou {@code null} si
+     *         {@code fundamentalis-status} n'est pas chargé
+     */
+    public static IStatusEffectRegistry getStoredStatusEffectRegistry() {
+        return statusEffectRegistry;
+    }
+
+    // -------------------------------------------------------------------------
     // Services — à implémenter par le Core
     // -------------------------------------------------------------------------
 
@@ -158,7 +203,7 @@ public abstract class FundamentalisAPI {
      *
      * @return the status effect type registry
      */
-//    public abstract IStatusEffectRegistry getStatusEffectRegistry();
+    public abstract IStatusEffectRegistry getStatusEffectRegistry();
 
     /**
      * Returns the typed {@link ComponentKey} used to access an
@@ -175,7 +220,7 @@ public abstract class FundamentalisAPI {
      *
      * @return the typed key for the status component
      */
-//    public abstract ComponentKey<IStatusComponent> getStatusComponentKey();
+    public abstract ComponentKey<IStatusComponent> getStatusComponentKey();
 
     /**
      * Returns the API version string (e.g. {@code "2.0.0"}).

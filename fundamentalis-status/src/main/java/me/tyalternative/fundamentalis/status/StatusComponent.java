@@ -10,6 +10,7 @@ import me.tyalternative.fundamentalis.api.stats.IStatsComponent;
 import me.tyalternative.fundamentalis.api.status.ActiveStatusEffect;
 import me.tyalternative.fundamentalis.api.status.IStatusComponent;
 import me.tyalternative.fundamentalis.api.status.StatusEffectType;
+import me.tyalternative.fundamentalis.status.effects.CC.IBlocksActions;
 import me.tyalternative.fundamentalis.status.engine.EffectTierEngine;
 import org.bukkit.Bukkit;
 
@@ -245,6 +246,11 @@ public class StatusComponent implements IStatusComponent, Component {
     }
 
     @Override
+    public Collection<ActiveStatusEffect> getAllEffectsOfType(StatusEffectType type) {
+        return Collections.unmodifiableCollection(engine.getAllTiers(type));
+    }
+
+    @Override
     public Collection<ActiveStatusEffect> getActiveEffects() {
         return Collections.unmodifiableCollection(engine.getAllActive());
     }
@@ -259,7 +265,7 @@ public class StatusComponent implements IStatusComponent, Component {
      * actif pour ce type, s'il en existe une.
      *
      * <p>Utilisé par {@code CrowdControlListener} pour consulter
-     * {@link me.tyalternative.fundamentalis.status.effects.IBlocksActions IBlocksActions}
+     * {@link IBlocksActions IBlocksActions}
      * sur le palier actif sans dupliquer la logique de résolution de palier.
      * Cette méthode n'est pas exposée par {@link IStatusComponent} - elle
      * retourne une classe interne à {@code fundamentalis-status}, jamais
@@ -322,17 +328,17 @@ public class StatusComponent implements IStatusComponent, Component {
 
         List<EffectTierEngine.TierChangeResult> changes = engine.tick(currentTick);
 
-        Set<UUID> idsAfterTick = new HashSet<>();
-        for (ActiveStatusEffect t : engine.getAll()) idsAfterTick.add(t.id());
-
-        idsBeforeTick.removeAll(idsAfterTick); // ne reste que les ids purgés à ce tick
-        idsBeforeTick.forEach(liveEffects::remove);
-
         for (EffectTierEngine.TierChangeResult change : changes) {
             if (change.changed()) {
                 handleTierChange(change, false);
             }
         }
+
+        Set<UUID> idsAfterTick = new HashSet<>();
+        for (ActiveStatusEffect t : engine.getAll()) idsAfterTick.add(t.id());
+
+        idsBeforeTick.removeAll(idsAfterTick); // ne reste que les ids purgés à ce tick
+        idsBeforeTick.forEach(liveEffects::remove);
     }
 
     // -------------------------------------------------------------------------

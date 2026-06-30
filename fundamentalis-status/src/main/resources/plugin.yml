@@ -13,8 +13,8 @@ softdepend: []
 
 commands:
   status:
-    description: "Applique, retire ou liste les effets de statut d'un joueur"
-    usage: "/status give|clear|list <joueur> ..."
+    description: "Applique, retire ou liste les effets de statut d'une cible"
+    usage: "/status give|clear|list <cible> ..."
 
 permissions:
   fundamentalis.status.give:
