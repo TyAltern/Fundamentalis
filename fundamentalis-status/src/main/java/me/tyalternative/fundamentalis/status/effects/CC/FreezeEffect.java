@@ -56,25 +56,22 @@ public class FreezeEffect extends StatusEffect implements Listener {
         listening = true;
 
 
-
-//        if () {
-//
-//        }
-
         LivingEntity entity = getEntity();
         if (entity == null || !entity.isValid()) return;
-
-        entity.sendMessage("size : " + getHolder().require(StatusComponent.KEY).getAllEffectsOfType(StatusEffectTypes.FREEZE).size());
 
         if (entity instanceof Player) {
             AttributeInstance speedAttr = entity.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
             AttributeInstance jumpAttr = entity.getAttribute(Attribute.GENERIC_JUMP_STRENGTH);
             AttributeInstance attackSpeedAttr = entity.getAttribute(Attribute.GENERIC_ATTACK_SPEED);
-            if (speedAttr != null && jumpAttr != null && attackSpeedAttr != null) {
+            AttributeInstance blockInteractionAttr = entity.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE);
+            AttributeInstance entityInteractionAttr = entity.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE);
+            if (speedAttr != null && jumpAttr != null && attackSpeedAttr != null && blockInteractionAttr != null && entityInteractionAttr != null) {
                 var modifier = new AttributeModifier(modifierKey, -1, AttributeModifier.Operation.MULTIPLY_SCALAR_1);
                 speedAttr.addModifier(modifier);
                 jumpAttr.addModifier(modifier);
                 attackSpeedAttr.addModifier(modifier);
+                blockInteractionAttr.addModifier(modifier);
+                entityInteractionAttr.addModifier(modifier);
             }
         }
         if (entity instanceof Mob) {
@@ -82,11 +79,13 @@ public class FreezeEffect extends StatusEffect implements Listener {
             ((Mob) entity).setAware(true);
         }
 
-//        buildIceBlock(entity);
+        buildIceBlock(entity);
+
+        // TODO: Il semble il y avoir un problème lorsque l'on applique un nouvel effet de freeze qui dure plus longtemps que celui précédent et l'effet est interrompu. A VOIR!
+
 
         // Effet visuel de glace
-        entity.setFreezeTicks(getDurationInt());
-        entity.lockFreezeTicks(true);
+        entity.setFreezeTicks(getDurationInt()*100);
 
         // Particules de glace
         entity.getWorld().spawnParticle(
@@ -111,17 +110,19 @@ public class FreezeEffect extends StatusEffect implements Listener {
         LivingEntity entity = getEntity();
         if (entity == null || !entity.isValid()) return;
 
-        entity.sendMessage("size : " + getHolder().require(StatusComponent.KEY).getAllEffectsOfType(StatusEffectTypes.FREEZE).size());
-
         if (entity instanceof Player) {
             AttributeInstance speedAttr = entity.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
             AttributeInstance jumpAttr = entity.getAttribute(Attribute.GENERIC_JUMP_STRENGTH);
             AttributeInstance attackSpeedAttr = entity.getAttribute(Attribute.GENERIC_ATTACK_SPEED);
-            if (speedAttr != null && jumpAttr != null && attackSpeedAttr != null) {
+            AttributeInstance blockInteractionAttr = entity.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE);
+            AttributeInstance entityInteractionAttr = entity.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE);
+            if (speedAttr != null && jumpAttr != null && attackSpeedAttr != null && blockInteractionAttr != null && entityInteractionAttr != null) {
                 var modifier = new AttributeModifier(modifierKey, -1, AttributeModifier.Operation.MULTIPLY_SCALAR_1);
                 speedAttr.removeModifier(modifier);
                 jumpAttr.removeModifier(modifier);
                 attackSpeedAttr.removeModifier(modifier);
+                blockInteractionAttr.removeModifier(modifier);
+                entityInteractionAttr.removeModifier(modifier);
             }
         }
         if (entity instanceof Mob) {
@@ -129,11 +130,8 @@ public class FreezeEffect extends StatusEffect implements Listener {
             ((Mob) entity).setAware(true);
         }
 
-
-        entity.lockFreezeTicks(false);
-
-
-//        breakIceCube();
+        entity.setFreezeTicks(80);
+        breakIceCube();
     }
 
     private void buildIceBlock(LivingEntity entity) {
@@ -196,6 +194,10 @@ public class FreezeEffect extends StatusEffect implements Listener {
 
         LivingEntity entity = getEntity();
 
+        for (BlockDisplay iceCubeBlockDisplay : iceCubeBlockDisplays) {
+            iceCubeBlockDisplay.remove();
+        }
+
         if (entity == null) return;
         // Particules de glace
         entity.getWorld().spawnParticle(
@@ -210,6 +212,7 @@ public class FreezeEffect extends StatusEffect implements Listener {
         double damage = event.getDamage() * ICE_BREAK_DAMAGE_MULTIPLICATOR;
         event.setDamage(damage);
         event.setForceCrit(true);
+        event.setKnockbackFactor(1.5);
 
         breakIceCube();
 

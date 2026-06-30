@@ -31,6 +31,12 @@ public enum DamageSource {
     /** Effet de statut : gel (réservé à fundamentalis-status). */
     STATUS_FREEZE,
 
+    /** Effet de statut : épine (réservé à fundamentalis-status). */
+    STATUS_THORNS,
+
+    /** Effet de statut : dénégation (réservé à fundamentalis-status). */
+    STATUS_DENIAL,
+
     /** Sort actif (réservé à fundamentalis-spells). */
     SPELL_ACTIVE,
 

@@ -38,6 +38,7 @@ public class DamageInfo {
 
     private boolean forcedCrit;
     private boolean canKnockback;
+    private double knockbackFactor;
 
     // -------------------------------------------------------------------------
     // Résultats — mutés uniquement par DamageManager pendant le pipeline
@@ -55,16 +56,17 @@ public class DamageInfo {
     // -------------------------------------------------------------------------
 
     private DamageInfo(Builder builder) {
-        this.attacker     = builder.attacker;
-        this.victim       = builder.victim;
-        this.baseDamage   = builder.baseDamage;
-        this.source       = builder.source;
-        this.type         = builder.type;
-        this.canCrit      = builder.canCrit;
-        this.forcedCrit   = builder.forcedCrit;
-        this.canKnockback = builder.canKnockback;
-        this.weapon       = builder.weapon;
-        this.attackType   = builder.attackType;
+        this.attacker        = builder.attacker;
+        this.victim          = builder.victim;
+        this.baseDamage      = builder.baseDamage;
+        this.source          = builder.source;
+        this.type            = builder.type;
+        this.canCrit         = builder.canCrit;
+        this.forcedCrit      = builder.forcedCrit;
+        this.canKnockback    = builder.canKnockback;
+        this.knockbackFactor = builder.knockbackFactor;
+        this.weapon          = builder.weapon;
+        this.attackType      = builder.attackType;
     }
 
     // -------------------------------------------------------------------------
@@ -94,6 +96,9 @@ public class DamageInfo {
 
     /** @return {@code true} si ce dégât doit appliquer un recul à la victime */
     public boolean canKnockback() { return canKnockback; }
+
+    /** @return le facteur appliqué au knockback */
+    public double getKnockbackFactor() { return knockbackFactor; }
 
     /** @return l'arme utilisée, ou {@code null} si le dégât n'est pas une attaque d'arme */
     public CustomWeapon getWeapon() { return weapon; }
@@ -130,6 +135,9 @@ public class DamageInfo {
     /** Active ou désactive le recul pour ce dégât. */
     public void setCanKnockback(boolean canKnockback) { this.canKnockback = canKnockback; }
 
+    /** Modifie le facteur du knockback */
+    public void setKnockbackFactor(double knockbackFactor) { this.knockbackFactor = knockbackFactor; }
+
     /** Force ce coup à être critique, indépendamment du jet aléatoire. */
     public void setForcedCrit(boolean forcedCrit) { this.forcedCrit = forcedCrit; }
 
@@ -155,25 +163,27 @@ public class DamageInfo {
     public static class Builder {
         private LivingEntity  attacker;
         private LivingEntity  victim;
-        private double        baseDamage   = 1;
-        private DamageSource  source       = DamageSource.UNKNOWN;
-        private DamageType    type         = DamageType.PHYSICAL;
-        private boolean       canCrit      = false;
-        private boolean       forcedCrit   = false;
-        private boolean       canKnockback = true;
+        private double        baseDamage      = 1;
+        private DamageSource  source          = DamageSource.UNKNOWN;
+        private DamageType    type            = DamageType.PHYSICAL;
+        private boolean       canCrit         = false;
+        private boolean       forcedCrit      = false;
+        private boolean       canKnockback    = true;
+        private double        knockbackFactor = 1.0;
         private CustomWeapon  weapon;
         private AttackType    attackType;
 
-        public Builder attacker(LivingEntity attacker)       { this.attacker = attacker; return this; }
-        public Builder victim(LivingEntity victim)           { this.victim = victim; return this; }
-        public Builder baseDamage(double baseDamage)         { this.baseDamage = baseDamage; return this; }
-        public Builder source(DamageSource source)           { this.source = source; return this; }
-        public Builder type(DamageType type)                 { this.type = type; return this; }
-        public Builder canCrit(boolean canCrit)               { this.canCrit = canCrit; return this; }
-        public Builder forcedCrit(boolean forcedCrit)         { this.forcedCrit = forcedCrit; return this; }
-        public Builder canKnockback(boolean canKnockback)    { this.canKnockback = canKnockback; return this; }
-        public Builder weapon(CustomWeapon weapon)            { this.weapon = weapon; return this; }
-        public Builder attackType(AttackType attackType)     { this.attackType = attackType; return this; }
+        public Builder attacker(LivingEntity attacker)         { this.attacker = attacker; return this; }
+        public Builder victim(LivingEntity victim)             { this.victim = victim; return this; }
+        public Builder baseDamage(double baseDamage)           { this.baseDamage = baseDamage; return this; }
+        public Builder source(DamageSource source)             { this.source = source; return this; }
+        public Builder type(DamageType type)                   { this.type = type; return this; }
+        public Builder canCrit(boolean canCrit)                { this.canCrit = canCrit; return this; }
+        public Builder forcedCrit(boolean forcedCrit)          { this.forcedCrit = forcedCrit; return this; }
+        public Builder canKnockback(boolean canKnockback)      { this.canKnockback = canKnockback; return this; }
+        public Builder knockbackFactor(double knockbackFactor) { this.knockbackFactor = knockbackFactor; return this; }
+        public Builder weapon(CustomWeapon weapon)             { this.weapon = weapon; return this; }
+        public Builder attackType(AttackType attackType)       { this.attackType = attackType; return this; }
 
         /**
          * Construit l'instance finale.

@@ -55,6 +55,8 @@ public class PreDamageEvent extends Event implements Cancellable {
 
     private double  damage;
     private boolean forceCrit;
+    private boolean canKnockBack;
+    private double  knockbackFactor;
     private boolean cancelled;
 
     // -------------------------------------------------------------------------
@@ -69,12 +71,16 @@ public class PreDamageEvent extends Event implements Cancellable {
      * @param damage     le montant de dégâts avant modification par les listeners
      */
     public PreDamageEvent(@Nullable LivingEntity attacker, @NotNull LivingEntity victim,
-                          @NotNull DamageType damageType, double damage) {
+                          @NotNull DamageType damageType, double damage,
+                          boolean forceCrit, boolean canKnockBack, double knockbackFactor) {
         super(false);
-        this.attacker   = attacker;
-        this.victim     = victim;
-        this.damageType = damageType;
-        this.damage     = damage;
+        this.attacker        = attacker;
+        this.victim          = victim;
+        this.damageType      = damageType;
+        this.damage          = damage;
+        this.forceCrit       = forceCrit;
+        this.canKnockBack    = canKnockBack;
+        this.knockbackFactor = knockbackFactor;
     }
 
     // -------------------------------------------------------------------------
@@ -106,6 +112,14 @@ public class PreDamageEvent extends Event implements Cancellable {
     public boolean isCritForced() { return this.forceCrit; }
 
     public void setForceCrit(boolean forceCrit) { this.forceCrit = forceCrit; }
+
+    public boolean canKnockBack() { return this.canKnockBack; }
+
+    public void setCanKnockBack(boolean canKnockBack) { this.canKnockBack = canKnockBack; }
+
+    public double getKnockbackFactor() { return this.knockbackFactor; }
+
+    public void setKnockbackFactor(double knockbackFactor) { this.knockbackFactor = knockbackFactor; }
 
     // -------------------------------------------------------------------------
     // Cancellable

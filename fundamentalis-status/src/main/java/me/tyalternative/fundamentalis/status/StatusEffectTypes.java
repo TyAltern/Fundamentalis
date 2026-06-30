@@ -48,14 +48,20 @@ public class StatusEffectTypes {
     // Contrôle de foule
     // -------------------------------------------------------------------------
 
-    /** Étourdissement — bloque mouvement, attaque, interaction et saut. Binaire (1 niveau), 2s par défaut. */
-    public static final StatusEffectType STUN = StatusEffectType.of("stun", StatusEffectCategory.CROWD_CONTROL, 1, 40);
+    /** Étourdissement — bloque mouvement, attaque, interaction et saut. Binaire (1 niveau), 10s par défaut. */
+    public static final StatusEffectType STUN = StatusEffectType.of("stun", StatusEffectCategory.CROWD_CONTROL, 1, 200);
 
-    /** Ralentissement — réduit la vitesse de déplacement sans bloquer d'action, 3 niveaux, 5s par défaut. */
-    public static final StatusEffectType SLOW = StatusEffectType.of("slow", StatusEffectCategory.CROWD_CONTROL, 3, 100);
+    /** Ralentissement — réduit la vitesse de déplacement sans bloquer d'action, 3 niveaux, 10s par défaut. */
+    public static final StatusEffectType SLOW = StatusEffectType.of("slow", StatusEffectCategory.CROWD_CONTROL, 3, 200);
 
-    /** Gel — ralentissement sévère + bloque le saut, 2 niveaux, 4s par défaut. */
-    public static final StatusEffectType FREEZE = StatusEffectType.of("freeze", StatusEffectCategory.CROWD_CONTROL, 2, 80);
+    /** Gel — gêle la victime, 2 niveaux, 10s par défaut. */
+    public static final StatusEffectType FREEZE = StatusEffectType.of("freeze", StatusEffectCategory.CROWD_CONTROL, 1, 200);
+
+    /** Enracinement — empêche de prendre du knockback , 1 niveaux, 10s par défaut. */
+    public static final StatusEffectType ROOTING = StatusEffectType.of("rooting", StatusEffectCategory.CROWD_CONTROL, 1, 200);
+
+    /** Impulsion Gravitationnelle — inflige un knockback négatif à ses ciles, les ramenant vers l'attaquant, 3 niveaux, 10s par défaut. */
+    public static final StatusEffectType GRAVITY_PULSE = StatusEffectType.of("gravity_pulse", StatusEffectCategory.CROWD_CONTROL, 3, 200);
 
     // -------------------------------------------------------------------------
     // Modificateurs de stat temporaires
@@ -67,12 +73,33 @@ public class StatusEffectTypes {
     /** Régénération — accélère la récupération de vie (consommée par un futur HealthComponent), 3 niveaux, 30s par défaut. */
     public static final StatusEffectType REGENERATION = StatusEffectType.of("regeneration", StatusEffectCategory.STAT_MODIFIER, 3, 600);
 
+    /** Vitesse — accélère la vitesse du joueur, 5 niveaux, 30s par défaut. */
+    public static final StatusEffectType SPEED = StatusEffectType.of("speed", StatusEffectCategory.STAT_MODIFIER, 5, 600);
+
+    /** Resistance — augmente la résistance, 3 niveaux, 30s par défaut. */
+    public static final StatusEffectType TOUGHNESS = StatusEffectType.of("toughness", StatusEffectCategory.STAT_MODIFIER, 3, 600);
+
+    /** Soin instantané — soigne instantanément, 10 niveaux, 0.5s par défaut. */
+    public static final StatusEffectType HEAL_BURST = StatusEffectType.of("heal_burst", StatusEffectCategory.STAT_MODIFIER, 10, 10);
+
+    /** Absorption — octroi de la vie temporaire supplémentaire, 5 niveaux, 30s par défaut. */
+    public static final StatusEffectType ABSORPTION = StatusEffectType.of("absorption", StatusEffectCategory.STAT_MODIFIER, 5, 600);
+
+    /** Adrénaline — Augment la force, mais réduit la défense, 3 niveaux, 30s par défaut. */
+    public static final StatusEffectType ADRENALINE = StatusEffectType.of("adrenaline", StatusEffectCategory.STAT_MODIFIER, 3, 600);
+
     // -------------------------------------------------------------------------
     // Effets spéciaux
     // -------------------------------------------------------------------------
 
     /** Vampirisme — vole un pourcentage des dégâts infligés sous forme de soin, 3 niveaux, 30s par défaut. */
     public static final StatusEffectType VAMPIRISM = StatusEffectType.of("vampirism", StatusEffectCategory.SPECIAL, 3, 600);
+
+    /** Epine — renvoie un pourcent des dégâts subit à l'attaquant, 3 niveaux, 30s par défaut. */
+    public static final StatusEffectType THORNS = StatusEffectType.of("thorns", StatusEffectCategory.SPECIAL, 3, 600);
+
+    /** Dénégation — en magazine tous les dégâts tant que l'effet est actif puis les appliques tous en même temps, 1 niveau, 60s par défaut. */
+    public static final StatusEffectType DENIAL = StatusEffectType.of("denial", StatusEffectCategory.SPECIAL, 1, 1200);
 
     /** Furtivité — effet spécial sur mesure (mécanique à définir par un futur comportement custom), 1 niveau, 20s par défaut. */
     public static final StatusEffectType STEALTH = StatusEffectType.of("stealth", StatusEffectCategory.SPECIAL, 1, 400);

@@ -10,13 +10,18 @@ import me.tyalternative.fundamentalis.combat.damage.DamageManager;
 import me.tyalternative.fundamentalis.status.command.StatusCommand;
 
 import me.tyalternative.fundamentalis.status.effects.CC.FreezeEffect;
+import me.tyalternative.fundamentalis.status.effects.CC.GravityPulseEffect;
+import me.tyalternative.fundamentalis.status.effects.CC.RootingEffect;
+import me.tyalternative.fundamentalis.status.effects.CC.SlowEffect;
 import me.tyalternative.fundamentalis.status.effects.DoT.BleedEffect;
 import me.tyalternative.fundamentalis.status.effects.DoT.BurnEffect;
 import me.tyalternative.fundamentalis.status.effects.DoT.InfernalBurnEffect;
 import me.tyalternative.fundamentalis.status.effects.DoT.PoisonEffect;
 
-import me.tyalternative.fundamentalis.status.effects.StatModifier.RegenerationEffect;
-import me.tyalternative.fundamentalis.status.effects.StatModifier.StrengthEffect;
+import me.tyalternative.fundamentalis.status.effects.StatModifier.*;
+import me.tyalternative.fundamentalis.status.effects.special.DenialEffect;
+import me.tyalternative.fundamentalis.status.effects.special.ThornsEffect;
+import me.tyalternative.fundamentalis.status.effects.special.VampirismEffect;
 import me.tyalternative.fundamentalis.status.listener.BlockVanillaEffectListener;
 import me.tyalternative.fundamentalis.status.listener.CrowdControlListener;
 import me.tyalternative.fundamentalis.status.listener.DeathCleanupListener;
@@ -156,9 +161,21 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
         registry.register(StatusEffectTypes.BLEED);
 
         registry.register(StatusEffectTypes.FREEZE);
+        registry.register(StatusEffectTypes.SLOW);
+        registry.register(StatusEffectTypes.ROOTING);
+        registry.register(StatusEffectTypes.GRAVITY_PULSE);
 
         registry.register(StatusEffectTypes.STRENGTH);
+        registry.register(StatusEffectTypes.SPEED);
         registry.register(StatusEffectTypes.REGENERATION);
+        registry.register(StatusEffectTypes.TOUGHNESS);
+        registry.register(StatusEffectTypes.HEAL_BURST);
+        registry.register(StatusEffectTypes.ABSORPTION);
+        registry.register(StatusEffectTypes.ADRENALINE);
+
+        registry.register(StatusEffectTypes.VAMPIRISM);
+        registry.register(StatusEffectTypes.THORNS);
+        registry.register(StatusEffectTypes.DENIAL);
     }
 
     // -------------------------------------------------------------------------
@@ -186,15 +203,37 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
         // ----- CC -----
         registry.register(StatusEffectTypes.FREEZE,
                 (holder, stats, meta) -> new FreezeEffect(holder, stats, meta, this));
+        registry.register(StatusEffectTypes.ROOTING,
+                (holder, stats, meta) -> new RootingEffect(holder, stats, meta, this));
+        registry.register(StatusEffectTypes.GRAVITY_PULSE,
+                (holder, stats, meta) -> new GravityPulseEffect(holder, stats, meta, this));
+        registry.register(StatusEffectTypes.SLOW,
+                SlowEffect::new);
 
         // ----- StatModifier -----
         registry.register(StatusEffectTypes.STRENGTH,
                 StrengthEffect::new);
+        registry.register(StatusEffectTypes.TOUGHNESS,
+                ToughnessEffect::new);
+        registry.register(StatusEffectTypes.ADRENALINE,
+                AdrenalineEffect::new);
+        registry.register(StatusEffectTypes.SPEED,
+                SpeedEffect::new);
         registry.register(StatusEffectTypes.REGENERATION,
                 (holder, stats, meta) -> new RegenerationEffect(holder, stats, meta, damageManager));
+        registry.register(StatusEffectTypes.HEAL_BURST,
+                (holder, stats, meta) -> new HealBurstEffect(holder, stats, meta, damageManager));
+        registry.register(StatusEffectTypes.ABSORPTION,
+                (holder, stats, meta) -> new AbsorptionEffect(holder, stats, meta, this));
 
 
         // ----- Spécial -----
+        registry.register(StatusEffectTypes.VAMPIRISM,
+                (holder, stats, meta) -> new VampirismEffect(holder, stats, meta, this, damageManager));
+        registry.register(StatusEffectTypes.THORNS,
+                (holder, stats, meta) -> new ThornsEffect(holder, stats, meta, this, damageManager));
+        registry.register(StatusEffectTypes.DENIAL,
+                (holder, stats, meta) -> new DenialEffect(holder, stats, meta, this, damageManager));
     }
 
     // -------------------------------------------------------------------------

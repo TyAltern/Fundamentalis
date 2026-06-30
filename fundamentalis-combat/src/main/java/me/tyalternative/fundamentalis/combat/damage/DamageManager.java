@@ -3,6 +3,7 @@ package me.tyalternative.fundamentalis.combat.damage;
 import me.tyalternative.fundamentalis.api.combat.DamageType;
 import me.tyalternative.fundamentalis.api.component.ComponentKey;
 import me.tyalternative.fundamentalis.api.entity.IEntityService;
+import me.tyalternative.fundamentalis.api.event.combat.PostDamageCalculationEvent;
 import me.tyalternative.fundamentalis.api.event.combat.PostDamageEvent;
 import me.tyalternative.fundamentalis.api.event.combat.PreDamageEvent;
 import me.tyalternative.fundamentalis.api.stats.IStatsComponent;
@@ -66,7 +67,7 @@ public class DamageManager {
     private static final double CRIT_DAMAGE_MULTIPLIER      = 1.5;
     private static final double MIN_DAMAGE                  = 0.5;
     private static final double BASE_KNOCKBACK              = 0.4;
-    private static final double KNOCKBACK_PER_FORCE_POINT   = 0.01;
+    private static final double KNOCKBACK_PER_FORCE_POINT   = 0.005;
 
     // -------------------------------------------------------------------------
     // Champs
@@ -132,7 +133,8 @@ public class DamageManager {
         // Permet aux futurs modules (status, spells) d'appliquer immunités,
         // résistances ou boucliers avant tout calcul de stats.
 
-        PreDamageEvent preEvent = new PreDamageEvent(info.getAttacker(), victim, info.getType(), damage);
+        PreDamageEvent preEvent = new PreDamageEvent(info.getAttacker(), victim, info.getType(), damage,
+                info.isCritForced(), info.canKnockback(), info.getKnockbackFactor());
         Bukkit.getPluginManager().callEvent(preEvent);
 
         if (preEvent.isCancelled()) {
@@ -143,6 +145,8 @@ public class DamageManager {
         }
 
         info.setForcedCrit(preEvent.isCritForced());
+        info.setCanKnockback(preEvent.canKnockBack());
+        info.setKnockbackFactor(preEvent.getKnockbackFactor());
         damage = preEvent.getDamage();
 
         // ========== 3. APPLICATION STATS ATTAQUANT (FORCE) ==========
@@ -200,7 +204,18 @@ public class DamageManager {
 
         info.setFinalDamage(damage);
         info.setWasKill(isKill);
-        victim.damage(damage);
+
+
+        PostDamageCalculationEvent postDamageCalculationEvent =
+                new PostDamageCalculationEvent(info.getAttacker(), victim, info.getType(), damage, isCrit, isKill);
+        Bukkit.getPluginManager().callEvent(postDamageCalculationEvent);
+
+        if (postDamageCalculationEvent.isCancelled())
+            return new DamageResult(originalDamage, 0, isCrit, true, info.wasImmune(), false, wasCharged, 0, 0, 0);
+
+        damage = postDamageCalculationEvent.getFinalDamage();
+
+        victim.damage(Math.max(damage, 0.01));
 
         // ========== 9. EFFETS POST-DÉGÂTS (onHitEffect de l'arme) ==========
 
@@ -309,9 +324,13 @@ public class DamageManager {
             double force = stats.get().getFinal(StatType.FORCE);
             knockback *= (1.0 + force * KNOCKBACK_PER_FORCE_POINT);
         }
-        Vector direction      = info.getAttacker().getLocation().getDirection().normalize();
-        Vector finalKnockback = direction.multiply(knockback).setY(0.4);
-        info.getVictim().setVelocity(info.getVictim().getVelocity().add(finalKnockback));
+
+        double knockbackFactor = info.getKnockbackFactor();
+        int sign = knockbackFactor >= 0 ? 1 : -1;
+        double factor = knockbackFactor/sign;
+        double directionX = info.getAttacker().getX() - info.getVictim().getX();
+        double directionZ = info.getAttacker().getZ() - info.getVictim().getZ();
+        info.getVictim().knockback(knockback * factor,directionX * sign, directionZ * sign);
     }
 
     /**
