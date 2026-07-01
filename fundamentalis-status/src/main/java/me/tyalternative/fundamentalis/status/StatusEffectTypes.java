@@ -105,7 +105,8 @@ public class StatusEffectTypes {
     public static final StatusEffectType BLOODLUST = StatusEffectType.of("bloodlust", StatusEffectCategory.SPECIAL, 3, 600);
 
     /** Enchainement — lie plusieurs entités entre elles et partagent leurs dégâts, 5 niveaux, 30s par défaut. */
-    public static final StatusEffectType CHAIN = StatusEffectType.of("chain", StatusEffectCategory.SPECIAL, 5, 600);
+    public static final StatusEffectType CHAIN = StatusEffectType.of("chain", StatusEffectCategory.SPECIAL, 5, 20);
+    public static final StatusEffectType CHAIN_LINK = StatusEffectType.of("chain_link", StatusEffectCategory.SPECIAL, 1, 300);
 
     /** Furtivité — effet spécial sur mesure (mécanique à définir par un futur comportement custom), 1 niveau, 20s par défaut. */
     public static final StatusEffectType STEALTH = StatusEffectType.of("stealth", StatusEffectCategory.SPECIAL, 1, 400);

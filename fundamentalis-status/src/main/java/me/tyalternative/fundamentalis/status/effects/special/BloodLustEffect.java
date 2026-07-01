@@ -20,7 +20,7 @@ public class BloodLustEffect extends StatusEffect implements Listener {
     // Constantes
     // -------------------------------------------------------------------------
 
-    private static final double FORCE_INCREMENT_PER_KILL = 0.01;
+    private static final double FORCE_INCREMENT_PER_KILL = 0.025;
     private static final double MAX_FORCE_INCREMENT_PER_LEVEL = 0.33;
 //    private static final long TICK_ADDED_INBETWEEN_KILL = 60;
 
@@ -57,6 +57,8 @@ public class BloodLustEffect extends StatusEffect implements Listener {
         if (listening) return;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         listening = true;
+
+        curentForceBonus = 0;
     }
 
     @Override

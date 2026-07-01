@@ -85,8 +85,9 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
         getLogger().info("[1/6] " + effectRegistry.getAll().size() + " effets enregistrés dans le registre.");
 
         // Étape 3 — Fabriques (une classe dédiée par effet, comme l'ancienne version)
+        ChainGroupRegistry chainGroupRegistry = new ChainGroupRegistry(this, damageManager, entityService);
         factoryRegistry = new StatusEffectFactoryRegistry(getLogger());
-        registerBuiltinFactories(factoryRegistry, damageManager);
+        registerBuiltinFactories(factoryRegistry, damageManager, chainGroupRegistry);
         getLogger().info("[2/6] Fabriques d'effets associées.");
 
         // Étape 4 — Listeners
@@ -176,6 +177,7 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
         registry.register(StatusEffectTypes.DENIAL);
         registry.register(StatusEffectTypes.BLOODLUST);
         registry.register(StatusEffectTypes.CHAIN);
+        registry.register(StatusEffectTypes.CHAIN_LINK);
     }
 
     // -------------------------------------------------------------------------
@@ -188,7 +190,7 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
      * le choix retenu : "une classe Java par effet", chacune capable de
      * porter son propre état (compteurs internes, listeners temporaires…).
      */
-    private void registerBuiltinFactories(StatusEffectFactoryRegistry registry, DamageManager damageManager) {
+    private void registerBuiltinFactories(StatusEffectFactoryRegistry registry, DamageManager damageManager, ChainGroupRegistry chainGroupRegistry) {
 
         // ----- DoT — chaque effet gère sa propre cadence de tick en interne -----
         registry.register(StatusEffectTypes.POISON,
@@ -237,7 +239,9 @@ public final class FundamentalisStatusPlugin extends JavaPlugin {
         registry.register(StatusEffectTypes.BLOODLUST,
                 (holder, stats, meta) -> new BloodLustEffect(holder, stats, meta, this, damageManager));
         registry.register(StatusEffectTypes.CHAIN,
-                (holder, stats, meta) -> new ChainEffect(holder, stats, meta, this, damageManager));
+                (holder, stats, meta) -> new ChainCasterEffect(holder, stats, meta, this, chainGroupRegistry));
+        registry.register(StatusEffectTypes.CHAIN_LINK,
+                (holder, stats, meta) -> new ChainVictimEffect(holder, stats, meta, chainGroupRegistry));
     }
 
     // -------------------------------------------------------------------------

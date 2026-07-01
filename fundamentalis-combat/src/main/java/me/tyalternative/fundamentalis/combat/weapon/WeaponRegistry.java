@@ -1,9 +1,12 @@
 package me.tyalternative.fundamentalis.combat.weapon;
 
 
+import me.tyalternative.fundamentalis.api.FundamentalisAPI;
+import me.tyalternative.fundamentalis.api.status.StatusEffectType;
 import me.tyalternative.fundamentalis.combat.damage.DamageInfo;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -179,6 +182,24 @@ public class WeaponRegistry {
                 8.0, 1.1, 4.5, Material.DIAMOND_HOE
         );
         registerWeapon(halberd);
+
+        CustomWeapon chainWhip = new CustomWeapon(
+                "chain_whip", WeaponType.SPEAR, "Fouet enchaîné",
+                6.0, 1.1, 4.0, Material.CHAIN
+        ) {
+            @Override
+            public void onHitEffect(DamageInfo info) {
+                LivingEntity attacker = info.getAttacker();
+                if (attacker == null) return;
+
+                StatusEffectType chainType = FundamentalisAPI.get().getStatusEffectRegistry().getOrThrow("chain");
+                FundamentalisAPI.get().getEntityService().get(attacker)
+                        .flatMap(holder -> holder.get(FundamentalisAPI.get().getStatusComponentKey()))
+                        .ifPresent(status -> status.applyEffect(
+                                chainType, 2, chainType.getDefaultDurationTicks(), "weapon:" + getId()));
+            }
+        };
+        registerWeapon(chainWhip);
     }
 
     public void registerFists() {
